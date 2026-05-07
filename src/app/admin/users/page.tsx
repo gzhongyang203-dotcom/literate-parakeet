@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { Search, Mail, CalendarDays, Shield, Loader2, UserPlus } from "lucide-react"
+import { Search, Mail, CalendarDays, Shield, Loader2 } from "lucide-react"
 import { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
@@ -45,9 +45,10 @@ export default function AdminUsersPage() {
     fetchUsers()
   }, [searchQuery])
 
-  const handleRoleChange = async (userId: string, newRole: string) => {
+  const handleRoleChange = async (userId: string, currentRole: string) => {
     setUpdatingId(userId)
     const supabase = createClient()
+    const newRole = currentRole === "admin" ? "user" : "admin"
     const { error } = await supabase
       .from("profiles")
       .update({ role: newRole })
@@ -111,7 +112,7 @@ export default function AdminUsersPage() {
                 >
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white font-medium text-sm">
-                      {user.nickname?.[0] || user.email[0].toUpperCase()}
+                      {user.nickname?.[0] || user.email?.[0]?.toUpperCase() || "?"}
                     </div>
                     <div>
                       <p className="text-sm font-medium">{user.nickname || "未设置昵称"}</p>
@@ -133,25 +134,17 @@ export default function AdminUsersPage() {
                     <span className="text-xs text-muted-foreground flex items-center gap-1">
                       <CalendarDays className="h-3 w-3" /> {formatDate(user.created_at)}
                     </span>
-                    {/* 暂时禁用角色切换功能，需要在 Supabase 中配置权限 */}
-                    {/* 
                     {updatingId === user.id ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() =>
-                          handleRoleChange(
-                            user.id,
-                            user.role === "admin" ? "user" : "admin"
-                          )
-                        }
+                        onClick={() => handleRoleChange(user.id, user.role)}
                       >
                         {user.role === "admin" ? "降级" : "升级"}
                       </Button>
                     )}
-                    */}
                   </div>
                 </div>
               ))}

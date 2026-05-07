@@ -1,30 +1,34 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
-import { Plus, Search, Edit3, Trash2, Eye, FileText, Sparkles } from "lucide-react"
+import { Plus, Search, Edit3, Trash2, Eye, FileText, Sparkles, Loader2, X, Save } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
-
-const DEMO_PROJECTS = [
-  { id: "1", title: "闲鱼AI代写服务", category: "闲鱼", status: "published", difficulty: "初级", views: 2300, created: "2026-04-15" },
-  { id: "2", title: "小红书AI壁纸号", category: "小红书", status: "published", difficulty: "初级", views: 1800, created: "2026-04-10" },
-  { id: "3", title: "情侣情绪价值小程序", category: "AI工具", status: "published", difficulty: "中级", views: 3100, created: "2026-04-08" },
-  { id: "4", title: "AI数字人直播带货", category: "AI工具", status: "draft", difficulty: "中级", views: 0, created: "2026-05-01" },
-  { id: "5", title: "AI音乐制作教程", category: "更多", status: "draft", difficulty: "中级", views: 0, created: "2026-05-02" },
-  { id: "6", title: "短视频解压动画号", category: "短视频", status: "published", difficulty: "初级", views: 1200, created: "2026-04-05" },
-  { id: "7", title: "AI表情包IP打造", category: "AI工具", status: "published", difficulty: "初级", views: 950, created: "2026-04-03" },
-  { id: "8", title: "拼多多虚拟资料店", category: "电商", status: "published", difficulty: "初级", views: 2100, created: "2026-04-01" },
-]
+import { createClient } from "@/lib/supabase/client"
+import { useRouter } from "next/navigation"
 
 const categories = ["全部", "闲鱼", "小红书", "AI工具", "短视频", "电商", "更多"]
 const statuses = ["全部", "published", "draft"]
 
-// 编辑器模板内容
+interface Project {
+  id: string
+  title: string
+  category: string
+  difficulty: string
+  status: string
+  is_premium: boolean
+  hook: string
+  income_estimate: string
+  tools_required: string[]
+  content: string
+  created_at: string
+}
+
 const EDITOR_TEMPLATE = `## 项目简介
 
 用一两句话介绍这个项目是什么，解决什么问题。
@@ -74,11 +78,17 @@ const EDITOR_TEMPLATE = `## 项目简介
 `
 
 export default function AdminProjectsPage() {
+  const router = useRouter()
+  const [projects, setProjects] = useState<Project[]>([])
+  const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState("全部")
   const [statusFilter, setStatusFilter] = useState("全部")
   const [search, setSearch] = useState("")
   const [showEditor, setShowEditor] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [previewMode, setPreviewMode] = useState(false)
+
   const [formTitle, setFormTitle] = useState("")
   const [formCategory, setFormCategory] = useState("AI工具")
   const [formDifficulty, setFormDifficulty] = useState("初级")
@@ -86,27 +96,40 @@ export default function AdminProjectsPage() {
   const [formIncome, setFormIncome] = useState("")
   const [formContent, setFormContent] = useState(EDITOR_TEMPLATE)
   const [formPremium, setFormPremium] = useState(false)
-  const [previewMode, setPreviewMode] = useState(false)
 
-  const filtered = DEMO_PROJECTS.filter((p) => {
-    if (filter !== "全部" && p.category !== filter) return false
-    if (statusFilter !== "全部" && p.status !== statusFilter) return false
-    if (search && !p.title.includes(search)) return false
-    return true
-  })
+  useEffect(() => {
+    fetchProjects()
+  }, [filter, statusFilter, search])
 
-  const openEditor = (id?: string) => {
-    if (id) {
-      const proj = DEMO_PROJECTS.find((p) => p.id === id)
-      if (proj) {
-        setEditingId(id)
-        setFormTitle(proj.title)
-        setFormCategory(proj.category)
-        setFormDifficulty(proj.difficulty)
-        setFormHook("")
-        setFormIncome("")
-        setFormContent(EDITOR_TEMPLATE)
-      }
+  const fetchProjects = async () => {
+    const supabase = createClient()
+    let query = supabase.from("projects").select("*").order("created_at", { ascending: false })
+
+    if (filter !== "全部") {
+      query = query.eq("category", filter)
+    }
+    if (statusFilter !== "全部") {
+      query = query.eq("status", statusFilter)
+    }
+    if (search) {
+      query = query.ilike("title", `%${search}%`)
+    }
+
+    const { data } = await query
+    if (data) setProjects(data)
+    setLoading(false)
+  }
+
+  const openEditor = (proj?: Project) => {
+    if (proj) {
+      setEditingId(proj.id)
+      setFormTitle(proj.title)
+      setFormCategory(proj.category || "AI工具")
+      setFormDifficulty(proj.difficulty || "初级")
+      setFormHook(proj.hook || "")
+      setFormIncome(proj.income_estimate || "")
+      setFormContent(proj.content || EDITOR_TEMPLATE)
+      setFormPremium(proj.is_premium || false)
     } else {
       setEditingId(null)
       setFormTitle("")
@@ -115,6 +138,7 @@ export default function AdminProjectsPage() {
       setFormHook("")
       setFormIncome("")
       setFormContent(EDITOR_TEMPLATE)
+      setFormPremium(false)
     }
     setShowEditor(true)
     setPreviewMode(false)
@@ -123,6 +147,72 @@ export default function AdminProjectsPage() {
   const closeEditor = () => {
     setShowEditor(false)
     setEditingId(null)
+  }
+
+  const handleSave = async () => {
+    if (!formTitle.trim()) {
+      alert("请填写项目标题")
+      return
+    }
+
+    setSaving(true)
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    const projectData = {
+      title: formTitle,
+      category: formCategory,
+      difficulty: formDifficulty,
+      hook: formHook,
+      income_estimate: formIncome,
+      content: formContent,
+      is_premium: formPremium,
+      status: editingId
+        ? (projects.find(p => p.id === editingId)?.status || "draft")
+        : "draft",
+      author_id: user?.id || null,
+      updated_at: new Date().toISOString(),
+    }
+
+    let error
+    if (editingId) {
+      const { error: e } = await supabase
+        .from("projects")
+        .update(projectData)
+        .eq("id", editingId)
+      error = e
+    } else {
+      const { error: e } = await supabase
+        .from("projects")
+        .insert({ ...projectData })
+      error = e
+    }
+
+    setSaving(false)
+
+    if (error) {
+      alert("保存失败：" + error.message)
+    } else {
+      closeEditor()
+      fetchProjects()
+      router.refresh()
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("确定要删除这个项目吗？")) return
+    const supabase = createClient()
+    await supabase.from("projects").delete().eq("id", id)
+    fetchProjects()
+  }
+
+  const handlePublish = async (id: string, currentStatus: string) => {
+    const supabase = createClient()
+    await supabase
+      .from("projects")
+      .update({ status: currentStatus === "published" ? "draft" : "published" })
+      .eq("id", id)
+    fetchProjects()
   }
 
   return (
@@ -148,7 +238,7 @@ export default function AdminProjectsPage() {
             className="pl-9"
           />
         </div>
-        <div className="flex gap-1">
+        <div className="flex gap-1 flex-wrap">
           {categories.map((cat) => (
             <Badge
               key={cat}
@@ -178,69 +268,115 @@ export default function AdminProjectsPage() {
       <Card>
         <CardHeader>
           <CardTitle className="text-base">
-            共 {filtered.length} 个项目
+            共 {projects.length} 个项目
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="divide-y">
-            {filtered.map((proj) => (
-              <div key={proj.id} className="flex items-center justify-between px-6 py-4 hover:bg-muted/30">
-                <div className="flex items-center gap-4 flex-1 min-w-0">
-                  <div className={`w-2 h-2 rounded-full shrink-0 ${proj.status === "published" ? "bg-green-500" : "bg-amber-400"}`} />
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium truncate">{proj.title}</p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <Badge variant="secondary" className="text-xs">{proj.category}</Badge>
-                      <span className="text-xs text-muted-foreground">{proj.difficulty} · {proj.created} · {proj.views} 浏览</span>
+          {loading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : projects.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">暂无项目，点击上方按钮创建第一个</p>
+            </div>
+          ) : (
+            <div className="divide-y">
+              {projects.map((proj) => (
+                <div key={proj.id} className="flex items-center justify-between px-6 py-4 hover:bg-muted/30">
+                  <div className="flex items-center gap-4 flex-1 min-w-0">
+                    <div className={`w-2 h-2 rounded-full shrink-0 ${proj.status === "published" ? "bg-green-500" : "bg-amber-400"}`} />
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium truncate">{proj.title}</p>
+                        {proj.is_premium && (
+                          <Badge variant="default" className="text-xs">付费</Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <Badge variant="secondary" className="text-xs">{proj.category}</Badge>
+                        <span className="text-xs text-muted-foreground">
+                          {proj.difficulty} · {new Date(proj.created_at).toLocaleDateString("zh-CN")} · {proj.hook?.slice(0, 30) || ""}
+                        </span>
+                      </div>
                     </div>
                   </div>
+                  <div className="flex items-center gap-2 shrink-0 ml-4">
+                    <Badge variant={proj.status === "published" ? "success" : "warning"}>
+                      {proj.status === "published" ? "已发布" : "草稿"}
+                    </Badge>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handlePublish(proj.id, proj.status)}
+                      title={proj.status === "published" ? "撤销发布" : "发布"}
+                    >
+                      {proj.status === "published" ? "撤销" : "发布"}
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => openEditor(proj)} title="编辑">
+                      <Edit3 className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-destructive hover:text-destructive"
+                      title="删除"
+                      onClick={() => handleDelete(proj.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 shrink-0 ml-4">
-                  <Badge variant={proj.status === "published" ? "success" : "warning"}>
-                    {proj.status === "published" ? "已发布" : "草稿"}
-                  </Badge>
-                  <Button variant="ghost" size="icon" onClick={() => openEditor(proj.id)} title="编辑">
-                    <Edit3 className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" title="删除">
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
       {/* 编辑器弹窗 */}
       {showEditor && (
-        <div className="fixed inset-0 z-[100] flex items-start justify-center bg-black/30 py-8 overflow-y-auto">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl mx-4 my-auto">
+        <div className="fixed inset-0 z-[100] flex items-start justify-center bg-black/50 py-8 overflow-y-auto">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl mx-4">
             {/* 顶部栏 */}
-            <div className="flex items-center justify-between px-6 py-4 border-b">
+            <div className="flex items-center justify-between px-6 py-4 border-b sticky top-0 bg-white rounded-t-xl z-10">
               <h2 className="text-lg font-bold">
                 {editingId ? "编辑项目" : "新建项目"}
               </h2>
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={() => setPreviewMode(!previewMode)} className="gap-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPreviewMode(!previewMode)}
+                  className="gap-1"
+                >
                   {previewMode ? <Edit3 className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
                   {previewMode ? "编辑" : "预览"}
                 </Button>
-                <Button size="sm" className="gap-1">
-                  <Sparkles className="h-3 w-3" />
-                  {editingId ? "更新" : "发布"}
+                <Button
+                  size="sm"
+                  className="gap-1"
+                  onClick={handleSave}
+                  disabled={saving}
+                >
+                  {saving ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  ) : (
+                    <Save className="h-3 w-3" />
+                  )}
+                  保存
                 </Button>
-                <Button variant="ghost" size="sm" onClick={closeEditor}>取消</Button>
+                <Button variant="ghost" size="sm" onClick={closeEditor}>
+                  <X className="h-4 w-4" />
+                </Button>
               </div>
             </div>
 
             {/* 编辑区 */}
-            <div className="p-6 max-h-[70vh] overflow-y-auto">
-              {/* 基本信息 */}
+            <div className="p-6 max-h-[calc(100vh-200px)] overflow-y-auto">
               {!previewMode && (
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div className="col-span-2">
-                    <label className="text-sm font-medium mb-1 block">项目标题</label>
+                    <label className="text-sm font-medium mb-1 block">项目标题 *</label>
                     <Input
                       value={formTitle}
                       onChange={(e) => setFormTitle(e.target.value)}
@@ -252,7 +388,7 @@ export default function AdminProjectsPage() {
                     <select
                       value={formCategory}
                       onChange={(e) => setFormCategory(e.target.value)}
-                      className="w-full h-9 rounded-md border px-3 text-sm"
+                      className="w-full h-9 rounded-md border px-3 text-sm bg-background"
                     >
                       {["闲鱼", "小红书", "AI工具", "短视频", "电商", "更多"].map((c) => (
                         <option key={c} value={c}>{c}</option>
@@ -264,7 +400,7 @@ export default function AdminProjectsPage() {
                     <select
                       value={formDifficulty}
                       onChange={(e) => setFormDifficulty(e.target.value)}
-                      className="w-full h-9 rounded-md border px-3 text-sm"
+                      className="w-full h-9 rounded-md border px-3 text-sm bg-background"
                     >
                       <option value="初级">初级</option>
                       <option value="中级">中级</option>
@@ -273,11 +409,19 @@ export default function AdminProjectsPage() {
                   </div>
                   <div>
                     <label className="text-sm font-medium mb-1 block">预期收入</label>
-                    <Input value={formIncome} onChange={(e) => setFormIncome(e.target.value)} placeholder="月入500-3000" />
+                    <Input
+                      value={formIncome}
+                      onChange={(e) => setFormIncome(e.target.value)}
+                      placeholder="月入500-3000"
+                    />
                   </div>
                   <div>
                     <label className="text-sm font-medium mb-1 block">一句话钩子</label>
-                    <Input value={formHook} onChange={(e) => setFormHook(e.target.value)} placeholder="用一句话吸引用户点击" />
+                    <Input
+                      value={formHook}
+                      onChange={(e) => setFormHook(e.target.value)}
+                      placeholder="用一句话吸引用户点击"
+                    />
                   </div>
                   <div className="col-span-2 flex items-center gap-2">
                     <input
@@ -298,7 +442,7 @@ export default function AdminProjectsPage() {
                   {previewMode ? "内容预览" : "项目内容（Markdown）"}
                 </label>
                 {previewMode ? (
-                  <div className="prose max-w-none border rounded-xl p-6 bg-muted/10">
+                  <div className="prose max-w-none border rounded-xl p-6 bg-muted/10 min-h-[400px]">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
                       {formContent || "*暂无内容*"}
                     </ReactMarkdown>
