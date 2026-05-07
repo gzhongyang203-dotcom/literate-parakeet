@@ -20,18 +20,24 @@ export default function AdminLayout({
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       
-      // In demo mode (no Supabase config), allow admin access
+      // In demo mode (no Supabase config), redirect to login
       if (!user) {
-        // Check if Supabase is configured
-        const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-        if (!url || url === "your_supabase_url") {
-          setAuthorized(true)
-          setLoading(false)
-          return
-        }
         router.push("/login?redirect=/admin")
         return
       }
+      
+      // Check admin role
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single()
+      
+      if (profile?.role !== "admin") {
+        router.push("/")
+        return
+      }
+      
       setAuthorized(true)
       setLoading(false)
     }

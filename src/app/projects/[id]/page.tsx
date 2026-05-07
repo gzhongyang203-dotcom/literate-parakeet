@@ -194,6 +194,26 @@ export default async function ProjectDetailPage({
   const { id } = await params
 
   let project: any = DEMO_PROJECTS[id]
+  let userSubscription: any = null
+  let userId: string | null = null
+
+  // 获取用户和订阅状态
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    userId = user?.id || null
+
+    if (user) {
+      const { data: sub } = await supabase
+        .from("subscriptions")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .single()
+      userSubscription = sub
+    }
+  } catch {}
+
   if (!project) {
     try {
       const supabase = await createClient()
@@ -204,10 +224,16 @@ export default async function ProjectDetailPage({
 
   if (!project) notFound()
 
+  // 检查是否有权限访问付费内容
+  const hasAccess = !project.is_premium || userSubscription !== null
+
   const scores = PROJECT_SCORES[id] || PROJECT_SCORES["1"]
   const tools = TOOL_LISTS[id] || TOOL_LISTS["1"]
   const checklist = CHECKLISTS[id] || CHECKLISTS["1"]
   const related = RELATED_PROJECTS[id] || []
+
+  // 显示内容的部分（付费墙之后的部分）
+  const showFullContent = hasAccess
 
   return (
     <>
@@ -269,25 +295,52 @@ export default async function ProjectDetailPage({
               </div>
             </div>
 
-            {/* Content */}
-            <div className="prose max-w-none mb-12">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {project.content}
-              </ReactMarkdown>
-            </div>
-
-            {/* Execution Checklist */}
-            <div className="mb-10 border rounded-xl p-6 bg-white">
-              <ExecutionChecklist steps={checklist} />
-            </div>
-
-            {/* Premium CTA */}
-            {project.is_premium && (
-              <div className="mt-8 p-6 rounded-xl bg-gradient-to-r from-purple-50 to-pink-50 border text-center">
-                <h3 className="text-lg font-bold mb-2">订阅后查看完整内容</h3>
-                <p className="text-sm text-muted-foreground mb-4">包含详细步骤、工具链接、踩坑笔记、进阶玩法</p>
-                <Button>立即订阅 - 即将上线</Button>
+            {/* Premium Paywall */}
+            {project.is_premium && !hasAccess && (
+              <div className="p-8 rounded-xl bg-gradient-to-r from-purple-50 to-pink-50 border text-center">
+                <div className="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-4">
+                  <svg className="h-8 w-8 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold mb-2">付费项目</h3>
+                <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                  此项目为付费内容，包含完整执行指南、工具链接、踩坑笔记和进阶玩法
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <Link href="/pricing">
+                    <Button size="lg" className="w-full sm:w-auto">
+                      立即订阅解锁
+                    </Button>
+                  </Link>
+                  {!userId && (
+                    <Link href={`/login?redirect=/projects/${id}`}>
+                      <Button size="lg" variant="outline" className="w-full sm:w-auto">
+                        登录
+                      </Button>
+                    </Link>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground mt-4">
+                  订阅仅需 ¥29/月，解锁全部付费项目
+                </p>
               </div>
+            )}
+
+            {/* Content (only shown if has access) */}
+            {showFullContent && (
+              <>
+                <div className="prose max-w-none mb-12">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {project.content}
+                  </ReactMarkdown>
+                </div>
+
+                {/* Execution Checklist */}
+                <div className="mb-10 border rounded-xl p-6 bg-white">
+                  <ExecutionChecklist steps={checklist} />
+                </div>
+              </>
             )}
 
             {/* Related Projects */}

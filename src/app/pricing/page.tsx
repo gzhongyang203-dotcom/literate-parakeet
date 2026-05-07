@@ -1,9 +1,12 @@
 "use client"
 
-import { Check, Zap, Sparkles, Crown } from "lucide-react"
+import { Check, Zap, Sparkles, Crown, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
+import { useEffect, useState } from "react"
+import { createClient } from "@/lib/supabase/client"
+import { useRouter } from "next/navigation"
 
 const PLANS = [
   {
@@ -27,11 +30,13 @@ const PLANS = [
     ],
     cta: "免费注册",
     href: "/login?tab=register",
+    action: null,
   },
   {
     name: "创业者",
     icon: Sparkles,
     price: "29",
+    planKey: "创业者",
     description: "获取完整项目方案，跟步骤落地执行",
     color: "border-purple-300 ring-2 ring-purple-200",
     iconBg: "bg-purple-100",
@@ -48,12 +53,13 @@ const PLANS = [
       { text: "源码/文档模板下载", included: false },
     ],
     cta: "立即订阅",
-    href: "/login?tab=register",
+    action: "subscribe",
   },
   {
     name: "合伙人",
     icon: Crown,
     price: "89",
+    planKey: "合伙人",
     description: "私密社群 + 1对1指导，快速跑通项目",
     color: "border-amber-300",
     iconBg: "bg-amber-100",
@@ -70,7 +76,7 @@ const PLANS = [
       { text: "源码/文档模板下载", included: true },
     ],
     cta: "立即订阅",
-    href: "/login?tab=register",
+    action: "subscribe",
   },
 ]
 
@@ -81,7 +87,63 @@ const FAQ = [
   { q: "支付方式有哪些？", a: "支持微信支付和支付宝，通过 Lemon Squeezy 安全处理。" },
 ]
 
-export default function PricingPage() {
+export function PricingContent() {
+  const router = useRouter()
+  const [user, setUser] = useState<any>(null)
+  const [subscription, setSubscription] = useState<any>(null)
+  const [loading, setLoading] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      setUser(user)
+
+      if (user) {
+        const { data: sub } = await supabase
+          .from("subscriptions")
+          .select("*")
+          .eq("user_id", user.id)
+          .eq("status", "active")
+          .single()
+        setSubscription(sub)
+      }
+    }
+
+    checkAuth()
+  }, [])
+
+  const handleSubscribe = async (planKey: string) => {
+    if (!user) {
+      router.push("/login?redirect=/pricing")
+      return
+    }
+
+    setLoading(planKey)
+    setError(null)
+
+    try {
+      const response = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan: planKey }),
+      })
+
+      const data = await response.json()
+
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        setError(data.error || "创建支付链接失败")
+      }
+    } catch (err) {
+      setError("网络错误，请重试")
+    } finally {
+      setLoading(null)
+    }
+  }
+
   return (
     <div className="container mx-auto px-4 py-12">
       {/* Header */}
@@ -91,7 +153,21 @@ export default function PricingPage() {
         <p className="text-muted-foreground max-w-md mx-auto">
           所有老项目永久免费。新项目 + 深度内容仅对订阅用户开放。
         </p>
+        {subscription && (
+          <Badge variant="success" className="mt-4">
+            您已订阅 {subscription.plan} 套餐
+          </Badge>
+        )}
       </div>
+
+      {/* Error message */}
+      {error && (
+        <div className="max-w-5xl mx-auto mb-6">
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+            {error}
+          </div>
+        </div>
+      )}
 
       {/* Plans */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-16">
@@ -122,14 +198,40 @@ export default function PricingPage() {
               <span className="text-muted-foreground">/月</span>
             </div>
 
-            <Link href={plan.href}>
+            {plan.action === null ? (
+              <Link href={plan.href}>
+                <Button
+                  className="w-full mb-6"
+                  variant={plan.popular ? "default" : "outline"}
+                >
+                  {plan.cta}
+                </Button>
+              </Link>
+            ) : subscription ? (
+              <Button
+                className="w-full mb-6"
+                variant="outline"
+                disabled
+              >
+                已订阅
+              </Button>
+            ) : (
               <Button
                 className="w-full mb-6"
                 variant={plan.popular ? "default" : "outline"}
+                onClick={() => handleSubscribe(plan.planKey!)}
+                disabled={loading === plan.planKey}
               >
-                {plan.cta}
+                {loading === plan.planKey ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    跳转支付...
+                  </>
+                ) : (
+                  plan.cta
+                )}
               </Button>
-            </Link>
+            )}
 
             <ul className="space-y-2.5 flex-1">
               {plan.features.map((feat, i) => (
@@ -172,4 +274,8 @@ export default function PricingPage() {
       </div>
     </div>
   )
+}
+
+export default function PricingPage() {
+  return <PricingContent />
 }

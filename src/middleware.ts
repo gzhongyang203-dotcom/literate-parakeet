@@ -34,7 +34,7 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const protectedPaths = ["/dashboard"]
+  const protectedPaths = ["/dashboard", "/profile"]
   const isProtected = protectedPaths.some((path) =>
     request.nextUrl.pathname.startsWith(path)
   )
@@ -44,6 +44,29 @@ export async function updateSession(request: NextRequest) {
     url.pathname = "/login"
     url.searchParams.set("redirect", request.nextUrl.pathname)
     return NextResponse.redirect(url)
+  }
+
+  // Admin route protection - only admin role can access
+  if (request.nextUrl.pathname.startsWith("/admin")) {
+    if (!user) {
+      const url = request.nextUrl.clone()
+      url.pathname = "/login"
+      url.searchParams.set("redirect", request.nextUrl.pathname)
+      return NextResponse.redirect(url)
+    }
+
+    // Check if user is admin
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single()
+
+    if (profile?.role !== "admin") {
+      const url = request.nextUrl.clone()
+      url.pathname = "/"
+      return NextResponse.redirect(url)
+    }
   }
 
   return supabaseResponse

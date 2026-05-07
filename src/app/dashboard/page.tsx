@@ -7,20 +7,69 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { createClient } from "@/lib/supabase/client"
 import type { User } from "@supabase/supabase-js"
-import { User as UserIcon, FileText, Users, LogOut, Loader2 } from "lucide-react"
+import { User as UserIcon, FileText, Users, LogOut, Loader2, CreditCard, Crown, Zap } from "lucide-react"
 import Link from "next/link"
+
+interface Profile {
+  id: string
+  email: string
+  nickname: string
+  role: string
+}
+
+interface Subscription {
+  id: string
+  plan: string
+  status: string
+  end_date: string | null
+}
 
 export default function DashboardPage() {
   const router = useRouter()
   const [user, setUser] = useState<User | null>(null)
+  const [profile, setProfile] = useState<Profile | null>(null)
+  const [subscription, setSubscription] = useState<Subscription | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const supabase = createClient()
-    supabase.auth.getUser().then(({ data }: { data: { user: User | null } }) => {
-      setUser(data.user)
+    const fetchData = async () => {
+      const supabase = createClient()
+
+      // Get user
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        setLoading(false)
+        return
+      }
+      setUser(user)
+
+      // Get profile
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single()
+
+      if (profileData) {
+        setProfile(profileData)
+      }
+
+      // Get subscription
+      const { data: subData } = await supabase
+        .from("subscriptions")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .single()
+
+      if (subData) {
+        setSubscription(subData)
+      }
+
       setLoading(false)
-    })
+    }
+
+    fetchData()
   }, [])
 
   const handleLogout = async () => {
@@ -43,18 +92,101 @@ export default function DashboardPage() {
     return null
   }
 
+  const getPlanBadge = () => {
+    if (!subscription) {
+      return (
+        <Badge variant="outline" className="gap-1">
+          <Zap className="h-3 w-3" /> 免费用户
+        </Badge>
+      )
+    }
+
+    if (subscription.plan === "合伙人") {
+      return (
+        <Badge className="gap-1 bg-gradient-to-r from-amber-500 to-orange-500">
+          <Crown className="h-3 w-3" /> 合伙人
+        </Badge>
+      )
+    }
+
+    return (
+      <Badge variant="secondary" className="gap-1">
+        <Zap className="h-3 w-3" /> 创业者
+      </Badge>
+    )
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">个人中心</h1>
-          <p className="text-muted-foreground">{user.email}</p>
+        <div className="flex items-center gap-4">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white text-2xl font-bold">
+            {profile?.nickname?.[0] || user?.email?.[0]?.toUpperCase() || "?"}
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold">{profile?.nickname || "用户"}</h1>
+              {getPlanBadge()}
+            </div>
+            <p className="text-muted-foreground">{user.email}</p>
+            {profile?.role === "admin" && (
+              <Badge variant="outline" className="mt-1">管理员</Badge>
+            )}
+          </div>
         </div>
         <Button variant="outline" size="sm" onClick={handleLogout} className="gap-2">
           <LogOut className="h-4 w-4" /> 退出登录
         </Button>
       </div>
 
+      {/* 订阅状态 */}
+      {subscription ? (
+        <Card className="mb-8 bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                  <CreditCard className="h-6 w-6 text-green-600" />
+                </div>
+                <div>
+                  <p className="font-medium">
+                    {subscription.plan === "合伙人" ? "合伙人套餐" : "创业者套餐"}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    订阅有效期至 {subscription.end_date
+                      ? new Date(subscription.end_date).toLocaleDateString("zh-CN")
+                      : "长期"}
+                  </p>
+                </div>
+              </div>
+              <Badge variant="success">有效</Badge>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="mb-8 border-dashed">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                  <CreditCard className="h-6 w-6 text-gray-400" />
+                </div>
+                <div>
+                  <p className="font-medium">免费用户</p>
+                  <p className="text-sm text-muted-foreground">
+                    升级订阅解锁更多内容
+                  </p>
+                </div>
+              </div>
+              <Link href="/pricing">
+                <Button size="sm">升级订阅</Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* 统计卡片 */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <Card>
           <CardHeader className="flex flex-row items-center gap-3">
@@ -62,7 +194,7 @@ export default function DashboardPage() {
             <CardTitle className="text-sm font-medium">浏览的项目</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">0</p>
+            <p className="text-2xl font-bold">-</p>
             <p className="text-xs text-muted-foreground">开始浏览项目库吧</p>
           </CardContent>
         </Card>
@@ -72,7 +204,7 @@ export default function DashboardPage() {
             <CardTitle className="text-sm font-medium">协作申请</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">0</p>
+            <p className="text-2xl font-bold">-</p>
             <p className="text-xs text-muted-foreground">参与项目协作</p>
           </CardContent>
         </Card>
@@ -82,7 +214,7 @@ export default function DashboardPage() {
             <CardTitle className="text-sm font-medium">我的项目</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">0</p>
+            <p className="text-2xl font-bold">-</p>
             <p className="text-xs text-muted-foreground">发布自己的项目</p>
           </CardContent>
         </Card>
