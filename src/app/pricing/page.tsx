@@ -84,7 +84,8 @@ const FAQ = [
   { q: "订阅后可以退款吗？", a: "7天内无条件退款，直接联系客服即可。" },
   { q: "免费版会一直免费吗？", a: "是的，老项目永远免费。最新项目会对订阅用户开放。" },
   { q: "AI创业助手是什么？", a: "内置的智能问答系统，可以咨询创业方向、项目建议、工具推荐。" },
-  { q: "支付方式有哪些？", a: "支持微信支付和支付宝，通过 Lemon Squeezy 安全处理。" },
+  { q: "支付方式有哪些？", a: "支持微信支付、支付宝、银行卡，通过微信/支付宝转账给客服即可开通。" },
+  { q: "如何订阅？", a: "点击下方「联系客服」，添加微信好友后转账即可秒开订阅。" },
 ]
 
 // 统计数据
@@ -146,28 +147,9 @@ export function PricingContent() {
       return
     }
 
-    setLoading(planKey)
-    setError(null)
-
-    try {
-      const response = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan: planKey }),
-      })
-
-      const data = await response.json()
-
-      if (data.url) {
-        window.location.href = data.url
-      } else {
-        setError(data.error || "创建支付链接失败")
-      }
-    } catch (err) {
-      setError("网络错误，请重试")
-    } finally {
-      setLoading(null)
-    }
+    // 跳转到客服页面
+    alert(`订阅 ${planKey} 套餐，请联系客服微信：13785108266\n转账后我们将为您手动开通订阅服务。`)
+    // 实际场景：可以打开客服窗口或跳转到指定页面
   }
 
   return (
@@ -228,7 +210,7 @@ export function PricingContent() {
       )}
 
       {/* Plans */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-16">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-8">
         {PLANS.map((plan) => (
           <div
             key={plan.name}
@@ -312,6 +294,34 @@ export function PricingContent() {
           </div>
         ))}
       </div>
+
+      {/* 客服订阅说明 */}
+      {!subscription && (
+        <div className="max-w-2xl mx-auto mb-12">
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-6 text-center">
+            <div className="text-3xl mb-3">💬</div>
+            <h3 className="font-bold text-lg mb-2">如何订阅？</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              点击上方「立即订阅」，然后<strong>添加客服微信 13785108266</strong><br />
+              转账后 <strong>30秒内</strong> 为您开通订阅权限
+            </p>
+            <div className="flex flex-wrap justify-center gap-3 text-sm">
+              <div className="flex items-center gap-1.5 bg-white rounded-full px-3 py-1.5 border">
+                <span className="text-green-500">✓</span> 微信支付
+              </div>
+              <div className="flex items-center gap-1.5 bg-white rounded-full px-3 py-1.5 border">
+                <span className="text-green-500">✓</span> 支付宝
+              </div>
+              <div className="flex items-center gap-1.5 bg-white rounded-full px-3 py-1.5 border">
+                <span className="text-green-500">✓</span> 银行卡转账
+              </div>
+              <div className="flex items-center gap-1.5 bg-white rounded-full px-3 py-1.5 border">
+                <span className="text-green-500">✓</span> 7天退款保障
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 行动号召 */}
       {!subscription && (
