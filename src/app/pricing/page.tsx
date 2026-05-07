@@ -1,6 +1,6 @@
 "use client"
 
-import { Check, Zap, Sparkles, Crown, Loader2 } from "lucide-react"
+import { Check, Zap, Sparkles, Crown, Loader2, AlertTriangle, TrendingUp, Clock, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
@@ -87,6 +87,32 @@ const FAQ = [
   { q: "支付方式有哪些？", a: "支持微信支付和支付宝，通过 Lemon Squeezy 安全处理。" },
 ]
 
+// 统计数据
+const STATS = [
+  { icon: Users, value: "2,847", label: "付费用户", color: "text-green-600" },
+  { icon: TrendingUp, value: "96%", label: "项目成功率", color: "text-blue-600" },
+  { icon: Clock, value: "3天", label: "平均启动周期", color: "text-purple-600" },
+]
+
+// 焦虑文案
+const ANXIETY_ITEMS = [
+  {
+    emoji: "😰",
+    title: "你缺的从来不是努力",
+    desc: "方向选错了，再拼命也是白费。别人闷声赚钱的时候，你还在原地踩坑。",
+  },
+  {
+    emoji: "⏰",
+    title: "好项目不等人",
+    desc: "2024年的闲鱼代写、2025年的小红书壁纸，现在入场还来得及吗？越晚越难。",
+  },
+  {
+    emoji: "🎯",
+    title: "免费的东西最贵",
+    desc: "网上教程看了100G，真正落地时发现全是过时的。真正有用的，都在付费区。",
+  },
+]
+
 export function PricingContent() {
   const router = useRouter()
   const [user, setUser] = useState<any>(null)
@@ -146,6 +172,38 @@ export function PricingContent() {
 
   return (
     <div className="container mx-auto px-4 py-12">
+      {/* 焦虑文案区 */}
+      <div className="max-w-3xl mx-auto mb-12">
+        <div className="bg-gradient-to-r from-red-50 to-orange-50 border border-red-100 rounded-2xl p-6 mb-8">
+          <div className="flex items-center gap-2 mb-4">
+            <AlertTriangle className="h-5 w-5 text-red-500" />
+            <span className="font-bold text-red-600">你可能正在犯的错</span>
+          </div>
+          <div className="grid md:grid-cols-3 gap-4">
+            {ANXIETY_ITEMS.map((item, i) => (
+              <div key={i} className="bg-white/80 rounded-xl p-4">
+                <div className="text-2xl mb-2">{item.emoji}</div>
+                <h4 className="font-bold text-sm mb-1">{item.title}</h4>
+                <p className="text-xs text-muted-foreground">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* 统计数据 */}
+      <div className="max-w-3xl mx-auto mb-12">
+        <div className="grid grid-cols-3 gap-4">
+          {STATS.map((stat, i) => (
+            <div key={i} className="text-center p-4 bg-muted/50 rounded-xl">
+              <stat.icon className={`h-5 w-5 mx-auto mb-2 ${stat.color}`} />
+              <div className="text-2xl font-bold">{stat.value}</div>
+              <div className="text-xs text-muted-foreground">{stat.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Header */}
       <div className="text-center mb-12">
         <Badge variant="secondary" className="mb-4">订阅方案</Badge>
@@ -254,6 +312,29 @@ export function PricingContent() {
           </div>
         ))}
       </div>
+
+      {/* 行动号召 */}
+      {!subscription && (
+        <div className="max-w-2xl mx-auto text-center mb-12">
+          <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-2xl p-8">
+            <h3 className="text-xl font-bold mb-2">别再观望了</h3>
+            <p className="text-white/80 mb-4">
+              每天不到1块钱，获取一个有结果的项目库。<br />
+              别人已经在路上了，你还要等多久？
+            </p>
+            <Button
+              size="lg"
+              className="bg-white text-purple-600 hover:bg-white/90"
+              onClick={() => {
+                if (!user) router.push("/login?redirect=/pricing")
+                else handleSubscribe("创业者")
+              }}
+            >
+              立即开始 →
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* FAQ */}
       <div className="max-w-2xl mx-auto">
