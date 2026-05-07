@@ -10,12 +10,12 @@ import { DailyUpdatePreview } from "@/components/daily-update"
 import { SmartRecommendation } from "@/components/smart-recommendation"
 
 const categories = [
+  { name: "抖音", count: 8, icon: "🎵", color: "bg-black text-white border-gray-800/50", hoverColor: "group-hover:bg-gray-800" },
+  { name: "快手", count: 5, icon: "📱", color: "bg-pink-50 text-pink-600 border-pink-200/50", hoverColor: "group-hover:bg-pink-100" },
   { name: "闲鱼", count: 12, icon: "🏪", color: "bg-orange-50 text-orange-600 border-orange-200/50", hoverColor: "group-hover:bg-orange-100" },
   { name: "小红书", count: 8, icon: "📕", color: "bg-pink-50 text-pink-600 border-pink-200/50", hoverColor: "group-hover:bg-pink-100" },
   { name: "AI工具", count: 15, icon: "🤖", color: "bg-purple-50 text-purple-600 border-purple-200/50", hoverColor: "group-hover:bg-purple-100" },
-  { name: "短视频", count: 9, icon: "🎬", color: "bg-blue-50 text-blue-600 border-blue-200/50", hoverColor: "group-hover:bg-blue-100" },
   { name: "电商", count: 6, icon: "🛒", color: "bg-green-50 text-green-600 border-green-200/50", hoverColor: "group-hover:bg-green-100" },
-  { name: "更多", count: 10, icon: "📂", color: "bg-gray-50 text-gray-600 border-gray-200/50", hoverColor: "group-hover:bg-gray-100" },
 ]
 
 const DEMO_PROJECTS = [
@@ -202,10 +202,20 @@ export default async function HomePage() {
                 <Card className={`h-full hover:border-primary/30 transition-all card-hover animate-fade-up-delay-${Math.min(index, 3)}`}>
                   <CardHeader>
                     <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <Badge variant="secondary" className="gap-1">
                           {project.category}
                         </Badge>
+                        {(project as any).is_featured && (
+                          <Badge variant="default" className="gap-1 bg-amber-500 text-white">
+                            ⭐ 官方推荐
+                          </Badge>
+                        )}
+                        {(project as any).is_practitioner_recommended && (
+                          <Badge variant="outline" className="gap-1 text-green-600 border-green-300 bg-green-50">
+                            👥 实践者推荐
+                          </Badge>
+                        )}
                         {project.trending && (
                           <Badge variant="outline" className="gap-1 text-amber-600 border-amber-200 bg-amber-50">
                             <Zap className="h-3 w-3" /> 热门

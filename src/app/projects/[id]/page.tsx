@@ -138,6 +138,12 @@ export default async function ProjectDetailPage({
           <div className="lg:col-span-2">
             <div className="flex items-start gap-2 mb-3 flex-wrap">
               <Badge variant="secondary">{project.category}</Badge>
+              {project.is_featured && (
+                <Badge variant="default" className="bg-amber-500 text-white">⭐ 官方推荐</Badge>
+              )}
+              {project.is_practitioner_recommended && (
+                <Badge variant="outline" className="text-green-600 border-green-300 bg-green-50">👥 实践者推荐</Badge>
+              )}
               <Badge variant={project.difficulty === "初级" ? "success" : project.difficulty === "中级" ? "warning" : "default"}>
                 {project.difficulty}
               </Badge>
@@ -284,6 +290,16 @@ export default async function ProjectDetailPage({
                 )}
               </div>
             </div>
+
+            {/* 推荐理由 */}
+            {project.recommend_reason && (
+              <div className="rounded-xl border border-amber-200 bg-amber-50 p-5">
+                <h3 className="font-semibold text-sm mb-2 flex items-center gap-1">
+                  <span className="text-lg">💡</span> 推荐理由
+                </h3>
+                <p className="text-sm text-amber-800">{project.recommend_reason}</p>
+              </div>
+            )}
 
             {/* Collaboration */}
             <ProjectDetailClient projectId={project.id} />

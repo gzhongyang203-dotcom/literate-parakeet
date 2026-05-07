@@ -26,6 +26,9 @@ CREATE TABLE IF NOT EXISTS projects (
   content TEXT DEFAULT ''::TEXT,
   status TEXT DEFAULT 'draft'::TEXT CHECK (status IN ('draft', 'published', 'archived')),
   is_premium BOOLEAN DEFAULT FALSE,
+  is_featured BOOLEAN DEFAULT FALSE,        -- 官方推荐（管理员推荐）
+  is_practitioner_recommended BOOLEAN DEFAULT FALSE,  -- 实践者推荐
+  recommend_reason TEXT DEFAULT '',         -- 推荐理由
   author_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()

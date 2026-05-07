@@ -12,7 +12,7 @@ import remarkGfm from "remark-gfm"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 
-const categories = ["全部", "闲鱼", "小红书", "AI工具", "短视频", "电商", "更多"]
+const categories = ["全部", "抖音", "快手", "闲鱼", "小红书", "AI工具", "电商"]
 const statuses = ["全部", "published", "draft"]
 
 interface Project {
@@ -22,6 +22,9 @@ interface Project {
   difficulty: string
   status: string
   is_premium: boolean
+  is_featured: boolean
+  is_practitioner_recommended: boolean
+  recommend_reason: string
   hook: string
   income_estimate: string
   tools_required: string[]
@@ -96,6 +99,9 @@ export default function AdminProjectsPage() {
   const [formIncome, setFormIncome] = useState("")
   const [formContent, setFormContent] = useState(EDITOR_TEMPLATE)
   const [formPremium, setFormPremium] = useState(false)
+  const [formFeatured, setFormFeatured] = useState(false)
+  const [formPractitioner, setFormPractitioner] = useState(false)
+  const [formRecommendReason, setFormRecommendReason] = useState("")
 
   useEffect(() => {
     fetchProjects()
@@ -130,6 +136,9 @@ export default function AdminProjectsPage() {
       setFormIncome(proj.income_estimate || "")
       setFormContent(proj.content || EDITOR_TEMPLATE)
       setFormPremium(proj.is_premium || false)
+      setFormFeatured(proj.is_featured || false)
+      setFormPractitioner(proj.is_practitioner_recommended || false)
+      setFormRecommendReason(proj.recommend_reason || "")
     } else {
       setEditingId(null)
       setFormTitle("")
@@ -139,6 +148,9 @@ export default function AdminProjectsPage() {
       setFormIncome("")
       setFormContent(EDITOR_TEMPLATE)
       setFormPremium(false)
+      setFormFeatured(false)
+      setFormPractitioner(false)
+      setFormRecommendReason("")
     }
     setShowEditor(true)
     setPreviewMode(false)
@@ -167,6 +179,9 @@ export default function AdminProjectsPage() {
       income_estimate: formIncome,
       content: formContent,
       is_premium: formPremium,
+      is_featured: formFeatured,
+      is_practitioner_recommended: formPractitioner,
+      recommend_reason: formRecommendReason,
       status: editingId
         ? (projects.find(p => p.id === editingId)?.status || "draft")
         : "draft",
@@ -291,6 +306,12 @@ export default function AdminProjectsPage() {
                         <p className="text-sm font-medium truncate">{proj.title}</p>
                         {proj.is_premium && (
                           <Badge variant="default" className="text-xs">付费</Badge>
+                        )}
+                        {proj.is_featured && (
+                          <Badge variant="default" className="text-xs bg-amber-500 text-white">⭐官方推荐</Badge>
+                        )}
+                        {proj.is_practitioner_recommended && (
+                          <Badge variant="outline" className="text-xs text-green-600 border-green-300 bg-green-50">👥实践者推荐</Badge>
                         )}
                       </div>
                       <div className="flex items-center gap-2 mt-0.5">
@@ -431,7 +452,38 @@ export default function AdminProjectsPage() {
                       onChange={(e) => setFormPremium(e.target.checked)}
                       className="rounded"
                     />
-                    <label htmlFor="premium" className="text-sm">标记为付费内容</label>
+                    <label htmlFor="premium" className="text-sm">付费内容</label>
+                  </div>
+                  <div className="col-span-2 grid grid-cols-2 gap-4 mt-2 p-4 bg-amber-50 rounded-lg border border-amber-200">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="featured"
+                        checked={formFeatured}
+                        onChange={(e) => setFormFeatured(e.target.checked)}
+                        className="rounded text-amber-500"
+                      />
+                      <label htmlFor="featured" className="text-sm font-medium">⭐ 官方推荐</label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="practitioner"
+                        checked={formPractitioner}
+                        onChange={(e) => setFormPractitioner(e.target.checked)}
+                        className="rounded text-green-500"
+                      />
+                      <label htmlFor="practitioner" className="text-sm font-medium">👥 实践者推荐</label>
+                    </div>
+                    <div className="col-span-2">
+                      <label className="text-xs text-muted-foreground mb-1 block">推荐理由（选填）</label>
+                      <Input
+                        value={formRecommendReason}
+                        onChange={(e) => setFormRecommendReason(e.target.value)}
+                        placeholder="为什么推荐这个项目？"
+                        className="text-sm"
+                      />
+                    </div>
                   </div>
                 </div>
               )}

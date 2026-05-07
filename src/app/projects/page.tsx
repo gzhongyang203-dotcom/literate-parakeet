@@ -21,7 +21,7 @@ const DEMO_PROJECTS = [
   { id: "12", title: "AI Agent企业服务", hook: "帮中小企业搭AI客服/知识库，收搭建费+月费", category: "AI工具", difficulty: "高级", income_estimate: "月入5000-50000" },
 ]
 
-const categories = ["全部", "闲鱼", "小红书", "AI工具", "短视频", "电商", "更多"]
+const categories = ["全部", "抖音", "快手", "闲鱼", "小红书", "AI工具", "电商"]
 const difficulties = ["全部", "初级", "中级", "高级"]
 
 export default async function ProjectsPage({
@@ -89,7 +89,15 @@ export default async function ProjectsPage({
             <Card className="h-full hover:border-primary/50 transition-all hover:shadow-md">
               <CardHeader>
                 <div className="flex items-start justify-between gap-2">
-                  <Badge variant="secondary">{project.category}</Badge>
+                  <div className="flex flex-wrap gap-1">
+                    <Badge variant="secondary">{project.category}</Badge>
+                    {(project as any).is_featured && (
+                      <Badge variant="default" className="text-xs bg-amber-500 text-white">⭐</Badge>
+                    )}
+                    {(project as any).is_practitioner_recommended && (
+                      <Badge variant="outline" className="text-xs text-green-600 border-green-300 bg-green-50">👥</Badge>
+                    )}
+                  </div>
                   <Badge variant={project.difficulty === "初级" ? "success" : project.difficulty === "中级" ? "warning" : "default"}>
                     {project.difficulty}
                   </Badge>
