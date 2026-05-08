@@ -7,6 +7,29 @@ import { AiChatWidget } from "@/components/ai-chat-widget"
 export const metadata: Metadata = {
   title: "创业导航 | 普通人也能上手的创业项目库",
   description: "发现可落地的创业项目，找到一起干的小伙伴。持续更新，小白友好。",
+  keywords: ["创业项目", "副业", "抖音变现", "小红书创业", "AI副业", "闲鱼赚钱", "短视频创业"],
+  authors: [{ name: "创业导航" }],
+  openGraph: {
+    title: "创业导航 | 普通人也能上手的创业项目库",
+    description: "发现可落地的创业项目，找到一起干的小伙伴。持续更新，小白友好。",
+    url: "https://literate-parakeet-mu.vercel.app",
+    siteName: "创业导航",
+    locale: "zh_CN",
+    type: "website",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "创业导航",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "创业导航 | 普通人也能上手的创业项目库",
+    description: "发现可落地的创业项目，找到一起干的小伙伴。持续更新，小白友好。",
+  },
   icons: {
     icon: "/favicon.svg",
   },

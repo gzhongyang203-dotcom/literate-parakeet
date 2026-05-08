@@ -57,10 +57,22 @@ export function TrustStats() {
     <section className="border-y bg-gradient-to-r from-purple-50/30 via-white to-pink-50/30">
       <div className="container mx-auto px-4 py-10">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-3xl mx-auto">
-          <AnimatedCounter end={68} suffix="+" label="创业项目" duration={2500} />
-          <AnimatedCounter end={256} suffix="+" label="社区成员" duration={2500} />
-          <AnimatedCounter end={6} label="项目分类" duration={1500} />
-          <AnimatedCounter end={89} suffix="%" label="项目可落地率" duration={2500} />
+          <div className="text-center">
+            <div className="text-2xl md:text-3xl font-bold text-primary">持续更新</div>
+            <div className="text-sm text-muted-foreground mt-1.5">创业项目</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl md:text-3xl font-bold text-primary">陆续加入</div>
+            <div className="text-sm text-muted-foreground mt-1.5">社区成员</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl md:text-3xl font-bold text-primary">6</div>
+            <div className="text-sm text-muted-foreground mt-1.5">项目分类</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl md:text-3xl font-bold text-primary">稳步提升</div>
+            <div className="text-sm text-muted-foreground mt-1.5">项目可落地率</div>
+          </div>
         </div>
       </div>
     </section>
@@ -74,7 +86,7 @@ export function ActivityIndicator() {
         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
         <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
       </span>
-      当前 <strong className="text-foreground">12</strong> 人在浏览 · 今日新增 <strong className="text-foreground">3</strong> 个项目
+      实时更新中 · 新项目持续加入
     </div>
   )
 }

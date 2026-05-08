@@ -88,11 +88,11 @@ const FAQ = [
   { q: "如何订阅？", a: "点击下方「联系客服」，添加微信好友后转账即可秒开订阅。" },
 ]
 
-// 统计数据
+// 统计数据（模糊表述）
 const STATS = [
-  { icon: Users, value: "2,847", label: "付费用户", color: "text-green-600" },
-  { icon: TrendingUp, value: "96%", label: "项目成功率", color: "text-blue-600" },
-  { icon: Clock, value: "3天", label: "平均启动周期", color: "text-purple-600" },
+  { icon: Users, value: "陆续加入", label: "创业者", color: "text-green-600" },
+  { icon: TrendingUp, value: "稳步提升", label: "项目成功率", color: "text-blue-600" },
+  { icon: Clock, value: "快速启动", label: "平均启动周期", color: "text-purple-600" },
 ]
 
 // 焦虑文案

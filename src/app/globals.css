@@ -138,11 +138,47 @@ body {
 
 /* ---------- 卡片增强 ---------- */
 .card-hover {
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .card-hover:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(139, 92, 246, 0.08);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(139, 92, 246, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06);
+  border-color: rgba(139, 92, 246, 0.3);
+}
+
+/* ---------- 按钮增强 ---------- */
+button, a[role="button"] {
+  transition: all 0.2s ease;
+}
+
+/* 聚焦状态 */
+*:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* 选中文字颜色 */
+::selection {
+  background-color: rgba(139, 92, 246, 0.2);
+  color: var(--foreground);
+}
+
+/* 滚动条美化 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--muted);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--muted-foreground);
+  border-radius: 4px;
+  opacity: 0.5;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--foreground);
 }
 
 /* 渐变边框 */

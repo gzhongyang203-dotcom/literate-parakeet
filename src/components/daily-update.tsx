@@ -13,17 +13,15 @@ interface UpcomingItem {
   teaser: string
 }
 
-const UPCOMING: UpcomingItem[] = [
+const UPCOMING = [
   {
-    date: "5月10日",
-    day: "3天后",
+    daysLater: 1,
     title: "抖音流量池机制深度解析",
     category: "短视频",
     teaser: "9层流量池晋级逻辑、算法推荐核心公式",
   },
   {
-    date: "5月13日",
-    day: "6天后",
+    daysLater: 4,
     title: "快手老铁经济变现路径",
     category: "短视频",
     teaser: "从0粉到月入过万的完整闭环",
@@ -114,11 +112,11 @@ export function DailyUpdatePreview() {
 
               {/* 数据证明 */}
               <div className="flex items-center justify-center gap-6 mt-5 text-white/60 text-xs">
-                <span>👥 2879+ 创业者</span>
+                <span>👥 陆续加入的创业者</span>
                 <span>•</span>
-                <span>📊 96% 成功率</span>
+                <span>📊 稳步提升的口碑</span>
                 <span>•</span>
-                <span>⏰ 3天/项目</span>
+                <span>⏰ 持续更新的项目</span>
               </div>
             </div>
           </div>
@@ -142,32 +140,39 @@ export function DailyUpdatePreview() {
               </Badge>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {UPCOMING.map((item) => (
-                <div
-                  key={item.date}
-                  className="flex items-start gap-3 p-3 rounded-lg bg-white/80 border hover:border-amber-200 transition-all cursor-pointer group"
-                >
-                  <div className="shrink-0 text-center min-w-[48px]">
-                    <div className="text-sm font-bold text-amber-600">{item.date.split("月")[0]}月</div>
-                    <div className="text-2xl font-bold leading-none">{item.date.split("月")[1]?.replace("日", "")}</div>
-                    <Badge variant="secondary" className="text-[10px] mt-1 px-1.5">
-                      {item.day}
-                    </Badge>
-                  </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <span className="text-sm font-medium group-hover:text-primary transition-colors">{item.title}</span>
-                      <Badge variant="outline" className="text-[10px]">{item.category}</Badge>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {UPCOMING.map((item) => {
+                const today = new Date()
+                const date = new Date(today)
+                date.setDate(date.getDate() + item.daysLater)
+                const dateLabel = `${date.getMonth() + 1}月${date.getDate()}日`
+                const dayLabel = `${item.daysLater}天后`
+                return (
+                  <div
+                    key={dateLabel}
+                    className="flex items-start gap-3 p-3 rounded-lg bg-white/80 border hover:border-amber-200 transition-all cursor-pointer group"
+                  >
+                    <div className="shrink-0 text-center min-w-[48px]">
+                      <div className="text-sm font-bold text-amber-600">{date.getMonth() + 1}月</div>
+                      <div className="text-2xl font-bold leading-none">{date.getDate()}</div>
+                      <Badge variant="secondary" className="text-[10px] mt-1 px-1.5">
+                        {dayLabel}
+                      </Badge>
                     </div>
-                    <p className="text-xs text-muted-foreground">{item.teaser}</p>
-                    <div className="flex items-center gap-1 mt-1.5 text-[10px] text-amber-600">
-                      <Clock className="h-3 w-3" />
-                      订阅用户优先获取
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className="text-sm font-medium group-hover:text-primary transition-colors">{item.title}</span>
+                        <Badge variant="outline" className="text-[10px]">{item.category}</Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground">{item.teaser}</p>
+                      <div className="flex items-center gap-1 mt-1.5 text-[10px] text-amber-600">
+                        <Clock className="h-3 w-3" />
+                        订阅用户优先获取
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </CardContent>
         </Card>
