@@ -143,13 +143,11 @@ export function PricingContent() {
 
   const handleSubscribe = async (planKey: string) => {
     if (!user) {
-      router.push("/login?redirect=/pricing")
+      router.push("/login?redirect=/payment?plan=" + encodeURIComponent(planKey))
       return
     }
 
-    // 跳转到客服页面
-    alert(`订阅 ${planKey} 套餐，请联系客服微信：13785108266\n转账后我们将为您手动开通订阅服务。`)
-    // 实际场景：可以打开客服窗口或跳转到指定页面
+    router.push("/payment?plan=" + encodeURIComponent(planKey))
   }
 
   return (

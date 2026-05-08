@@ -10,6 +10,7 @@ import {
   Users,
   Handshake,
   CreditCard,
+  DollarSign,
   Settings,
   LogOut,
   Menu,
@@ -26,6 +27,7 @@ const sidebarItems = [
   { label: "用户管理", href: "/admin/users", icon: Users },
   { label: "协作管理", href: "/admin/collaborations", icon: Handshake },
   { label: "订阅管理", href: "/admin/subscriptions", icon: CreditCard },
+  { label: "支付审核", href: "/admin/payments", icon: DollarSign },
   { label: "系统设置", href: "/admin/settings", icon: Settings },
 ]
 
