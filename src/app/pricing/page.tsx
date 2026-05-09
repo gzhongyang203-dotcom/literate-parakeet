@@ -48,7 +48,7 @@ const PLANS = [
       { text: "协作匹配功能", included: true },
       { text: "最新项目优先查看", included: true },
       { text: "完整执行指南 + 模板", included: true },
-      { text: "AI 创业助手咨询", included: true },
+      { text: "AI 创业雷达（每天5次查询）", included: true },
       { text: "私密创业者社群", included: false },
       { text: "源码/文档模板下载", included: false },
     ],
@@ -71,7 +71,7 @@ const PLANS = [
       { text: "协作匹配功能", included: true },
       { text: "最新项目优先查看", included: true },
       { text: "完整执行指南 + 模板", included: true },
-      { text: "AI 创业助手（无限次）", included: true },
+      { text: "AI 创业雷达（无限次查询）", included: true },
       { text: "私密创业者社群", included: true },
       { text: "源码/文档模板下载", included: true },
     ],
@@ -83,7 +83,7 @@ const PLANS = [
 const FAQ = [
   { q: "订阅后可以退款吗？", a: "7天内无条件退款，直接联系客服即可。" },
   { q: "免费版会一直免费吗？", a: "是的，老项目永远免费。最新项目会对订阅用户开放。" },
-  { q: "AI创业助手是什么？", a: "内置的智能问答系统，可以咨询创业方向、项目建议、工具推荐。" },
+  { q: "AI创业雷达是什么？", a: "接入DeepSeek大模型的智能助手，实时分析全网最新创业项目、副业赛道和商业机会，给你具体可落地的建议。创业者套餐每天5次，合伙人套餐无限次。" },
   { q: "支付方式有哪些？", a: "支持微信支付、支付宝、银行卡，通过微信/支付宝转账给客服即可开通。" },
   { q: "如何订阅？", a: "点击下方「联系客服」，添加微信好友后转账即可秒开订阅。" },
 ]

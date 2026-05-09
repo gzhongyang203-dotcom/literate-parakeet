@@ -20,6 +20,7 @@ import {
 
 const navItems = [
   { label: "项目库", href: "/projects" },
+  { label: "AI助手", href: "/ai-assistant" },
   { label: "协作广场", href: "/collaborate" },
   { label: "社区", href: "/community" },
   { label: "关于", href: "/about" },
