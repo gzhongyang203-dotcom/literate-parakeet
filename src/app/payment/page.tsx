@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -22,6 +22,18 @@ const PLAN_INFO = {
 }
 
 export default function PaymentPage() {
+  return (
+    <Suspense fallback={
+      <div className="container mx-auto px-4 py-16 flex justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    }>
+      <PaymentContent />
+    </Suspense>
+  )
+}
+
+function PaymentContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const planKey = searchParams.get("plan") || "创业者"
