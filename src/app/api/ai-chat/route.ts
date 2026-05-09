@@ -6,8 +6,9 @@ const DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions"
 
 // 每日限额
 const DAILY_LIMIT = {
-  "创业者": 5,  // 29元：每天5次
-  "合伙人": 999, // 89元：无限次（999视为无限）
+  "免费版": 5,   // 免费版：每天5次
+  "创业者": 999, // 29元：无限次
+  "合伙人": 999, // 89元：无限次
 }
 
 const SYSTEM_PROMPT = `你是"创业雷达"，一个专注于帮助中国创业者发现最新商业机会的AI助手。
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "请先登录" }, { status: 401 })
     }
 
-    // 检查订阅
+    // 检查订阅（免费版用户也允许使用，但有次数限制）
     const { data: subscription } = await supabase
       .from("subscriptions")
       .select("*")
@@ -45,11 +46,8 @@ export async function POST(request: NextRequest) {
       .eq("status", "active")
       .single()
 
-    if (!subscription) {
-      return NextResponse.json({ error: "需要订阅才能使用AI助手", code: "NO_SUBSCRIPTION" }, { status: 403 })
-    }
-
-    const plan = subscription.plan as keyof typeof DAILY_LIMIT
+    // 免费版用户使用5次限制，付费用户根据套餐
+    const plan = (subscription?.plan as keyof typeof DAILY_LIMIT) || "免费版"
     const dailyLimit = DAILY_LIMIT[plan] || 5
 
     // 检查今日使用次数（仅对有限额套餐）
@@ -63,7 +61,7 @@ export async function POST(request: NextRequest) {
 
       if ((count || 0) >= dailyLimit) {
         return NextResponse.json({
-          error: `今日使用次数已达上限（${dailyLimit}次/天）`,
+          error: `今日使用次数已达上限（${dailyLimit}次/天），升级到付费版可获得无限次`,
           code: "DAILY_LIMIT_EXCEEDED",
           remaining: 0,
           limit: dailyLimit,
@@ -168,11 +166,8 @@ export async function GET() {
       .eq("status", "active")
       .single()
 
-    if (!subscription) {
-      return NextResponse.json({ subscribed: false })
-    }
-
-    const plan = subscription.plan as keyof typeof DAILY_LIMIT
+    // 免费版用户也允许使用AI
+    const plan = (subscription?.plan as keyof typeof DAILY_LIMIT) || "免费版"
     const dailyLimit = DAILY_LIMIT[plan] || 5
 
     if (dailyLimit >= 999) {

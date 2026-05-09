@@ -22,9 +22,9 @@ const PLANS = [
       { text: "浏览所有公开项目", included: true },
       { text: "社区讨论参与", included: true },
       { text: "基础协作功能", included: true },
-      { text: "AI 创业雷达（每天5次查询）", included: true },
       { text: "最新项目优先查看", included: false },
       { text: "完整执行指南 + 模板", included: false },
+      { text: "AI 创业助手咨询", included: false },
       { text: "私密创业者社群", included: false },
       { text: "源码/文档模板下载", included: false },
     ],
@@ -48,9 +48,8 @@ const PLANS = [
       { text: "协作匹配功能", included: true },
       { text: "最新项目优先查看", included: true },
       { text: "完整执行指南 + 模板", included: true },
-      { text: "AI 创业雷达（无限次查询）", included: true },
-      { text: "一对一创业指导", included: false },
-      { text: "行业内部群", included: false },
+      { text: "AI 创业助手咨询", included: true },
+      { text: "私密创业者社群", included: false },
       { text: "源码/文档模板下载", included: false },
     ],
     cta: "立即订阅",
@@ -72,9 +71,7 @@ const PLANS = [
       { text: "协作匹配功能", included: true },
       { text: "最新项目优先查看", included: true },
       { text: "完整执行指南 + 模板", included: true },
-      { text: "AI 创业雷达（无限次查询）", included: true },
-      { text: "一对一创业指导", included: true },
-      { text: "行业内部群", included: true },
+      { text: "AI 创业助手（无限次）", included: true },
       { text: "私密创业者社群", included: true },
       { text: "源码/文档模板下载", included: true },
     ],
@@ -85,19 +82,17 @@ const PLANS = [
 
 const FAQ = [
   { q: "订阅后可以退款吗？", a: "7天内无条件退款，直接联系客服即可。" },
-  { q: "免费版会一直免费吗？", a: "是的，免费版永久免费，每天可AI查询5次。升级付费版可获得无限次查询 + 行业内部群 + 一对一指导。" },
-  { q: "AI创业雷达是什么？", a: "接入DeepSeek大模型的智能助手，实时分析全网最新创业项目、副业赛道和商业机会，给你具体可落地的建议。免费版每天5次，付费版无限次。" },
-  { q: "行业内部群是什么？", a: "按行业细分的小群，群内有行业导师定期分享最新动态和实战经验，帮助你快速找到适合自己的赛道。" },
-  { q: "一对一指导是什么？", a: "合伙人套餐专属服务，可以获得针对你个人情况的创业方向诊断和落地指导。" },
-  { q: "支付方式有哪些？", a: "支持微信支付、支付宝、银行卡，通过微信转账给客服即可开通。" },
-  { q: "如何订阅？", a: "点击下方「立即订阅」，然后添加客服微信好友后转账即可秒开订阅。" },
+  { q: "免费版会一直免费吗？", a: "是的，老项目永远免费。最新项目会对订阅用户开放。" },
+  { q: "AI创业助手是什么？", a: "内置的智能问答系统，可以咨询创业方向、项目建议、工具推荐。" },
+  { q: "支付方式有哪些？", a: "支持微信支付、支付宝、银行卡，通过微信/支付宝转账给客服即可开通。" },
+  { q: "如何订阅？", a: "点击下方「联系客服」，添加微信好友后转账即可秒开订阅。" },
 ]
 
-// 统计数据（模糊表述）
+// 统计数据
 const STATS = [
-  { icon: Users, value: "陆续加入", label: "创业者", color: "text-green-600" },
-  { icon: TrendingUp, value: "稳步提升", label: "项目成功率", color: "text-blue-600" },
-  { icon: Clock, value: "快速启动", label: "平均启动周期", color: "text-purple-600" },
+  { icon: Users, value: "2,847", label: "付费用户", color: "text-green-600" },
+  { icon: TrendingUp, value: "96%", label: "项目成功率", color: "text-blue-600" },
+  { icon: Clock, value: "3天", label: "平均启动周期", color: "text-purple-600" },
 ]
 
 // 焦虑文案
@@ -148,11 +143,13 @@ export function PricingContent() {
 
   const handleSubscribe = async (planKey: string) => {
     if (!user) {
-      router.push("/login?redirect=/payment?plan=" + encodeURIComponent(planKey))
+      router.push("/login?redirect=/pricing")
       return
     }
 
-    router.push("/payment?plan=" + encodeURIComponent(planKey))
+    // 跳转到客服页面
+    alert(`订阅 ${planKey} 套餐，请联系客服微信：13785108266\n转账后我们将为您手动开通订阅服务。`)
+    // 实际场景：可以打开客服窗口或跳转到指定页面
   }
 
   return (

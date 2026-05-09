@@ -190,26 +190,23 @@ function PaymentContent() {
               <div className="w-6 h-6 bg-purple-600 text-white rounded-full flex items-center justify-center text-sm font-bold">1</div>
               <span className="font-bold">扫码付款</span>
             </div>
-            <p className="text-sm text-muted-foreground mb-4">请使用微信或支付宝扫码支付 <strong>¥{info.price}</strong></p>
-            <div className="grid grid-cols-2 gap-4">
+            <p className="text-sm text-muted-foreground mb-4">请使用微信扫码支付 <strong>¥{info.price}</strong></p>
+
+            {/* 二维码展示 */}
+            <div className="grid grid-cols-2 gap-4 mb-4">
               <div className="border rounded-xl p-4 text-center">
-                <div className="text-4xl mb-2">💬</div>
-                <p className="text-sm font-medium">微信支付</p>
-                <Button variant="outline" size="sm" className="mt-2" onClick={copyWechat}>
-                  {copied ? <Check className="h-4 w-4 mr-1" /> : <Copy className="h-4 w-4 mr-1" />}
-                  {copied ? "已复制" : "复制微信"}
-                </Button>
+                <img src="/images/wechat-friend-qr.jpg" alt="加我好友" className="w-full max-w-[140px] mx-auto rounded-lg mb-2" />
+                <p className="text-sm font-medium">加我好友</p>
+                <p className="text-xs text-muted-foreground">备注"订阅{planKey}"</p>
               </div>
               <div className="border rounded-xl p-4 text-center">
-                <div className="text-4xl mb-2">💙</div>
-                <p className="text-sm font-medium">支付宝</p>
-                <Button variant="outline" size="sm" className="mt-2" onClick={copyWechat}>
-                  <Copy className="h-4 w-4 mr-1" />
-                  复制账号
-                </Button>
+                <img src="/images/wechat-pay-qr.jpg" alt="微信付款" className="w-full max-w-[140px] mx-auto rounded-lg mb-2" />
+                <p className="text-sm font-medium">扫码付款</p>
+                <p className="text-xs text-muted-foreground">¥{info.price}</p>
               </div>
             </div>
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mt-4">
+
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
               <div className="flex items-start gap-2">
                 <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
                 <p className="text-xs text-amber-800">
