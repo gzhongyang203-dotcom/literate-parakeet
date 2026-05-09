@@ -75,6 +75,26 @@ CREATE TABLE IF NOT EXISTS likes (
   UNIQUE(project_id, user_id)
 );
 
+-- 7. 公告表 (announcements)
+CREATE TABLE IF NOT EXISTS announcements (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title TEXT NOT NULL,
+  content TEXT DEFAULT ''::TEXT,
+  is_pinned BOOLEAN DEFAULT FALSE,
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 8. 公告评论表 (announcement_comments)
+CREATE TABLE IF NOT EXISTS announcement_comments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  announcement_id UUID REFERENCES announcements(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
+  content TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- =============================================
 -- 自动触发器：新建用户时自动创建profile
 -- =============================================
@@ -110,6 +130,8 @@ ALTER TABLE comments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE project_collaborators ENABLE ROW LEVEL SECURITY;
 ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE likes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE announcements ENABLE ROW LEVEL SECURITY;
+ALTER TABLE announcement_comments ENABLE ROW LEVEL SECURITY;
 
 -- profiles 策略
 DROP POLICY IF EXISTS "Users can view own profile" ON profiles;
@@ -173,6 +195,42 @@ DROP POLICY IF EXISTS "Users can unlike" ON likes;
 CREATE POLICY "Users can unlike" ON likes
   FOR DELETE USING (auth.uid() = user_id);
 
+-- announcements 策略
+DROP POLICY IF EXISTS "Anyone can view active announcements" ON announcements;
+CREATE POLICY "Anyone can view active announcements" ON announcements
+  FOR SELECT USING (is_active = TRUE);
+
+DROP POLICY IF EXISTS "Admins can manage announcements" ON announcements;
+CREATE POLICY "Admins can manage announcements" ON announcements
+  FOR ALL USING (
+    EXISTS (
+      SELECT 1 FROM profiles
+      WHERE profiles.id = auth.uid() AND profiles.role = 'admin'
+    )
+  );
+
+-- announcement_comments 策略
+DROP POLICY IF EXISTS "Anyone can view announcement comments" ON announcement_comments;
+CREATE POLICY "Anyone can view announcement comments" ON announcement_comments
+  FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Authenticated users can add comments" ON announcement_comments;
+CREATE POLICY "Authenticated users can add comments" ON announcement_comments
+  FOR INSERT WITH CHECK (auth.uid() IS NOT NULL AND auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can delete own comments" ON announcement_comments;
+CREATE POLICY "Users can delete own comments" ON announcement_comments
+  FOR DELETE USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Admins can delete all comments" ON announcement_comments;
+CREATE POLICY "Admins can delete all comments" ON announcement_comments
+  FOR DELETE USING (
+    EXISTS (
+      SELECT 1 FROM profiles
+      WHERE profiles.id = auth.uid() AND profiles.role = 'admin'
+    )
+  );
+
 -- =============================================
 -- 索引优化
 -- =============================================
@@ -183,6 +241,9 @@ CREATE INDEX IF NOT EXISTS idx_comments_project ON comments(project_id);
 CREATE INDEX IF NOT EXISTS idx_collaborators_status ON project_collaborators(status);
 CREATE INDEX IF NOT EXISTS idx_subscriptions_user ON subscriptions(user_id);
 CREATE INDEX IF NOT EXISTS idx_subscriptions_status ON subscriptions(status);
+CREATE INDEX IF NOT EXISTS idx_announcements_active ON announcements(is_active);
+CREATE INDEX IF NOT EXISTS idx_announcements_pinned ON announcements(is_pinned);
+CREATE INDEX IF NOT EXISTS idx_announcement_comments ON announcement_comments(announcement_id);
 
 -- =============================================
 -- 完成提示

@@ -16,13 +16,14 @@ import {
   ChevronDown,
   Crown,
   Zap,
+  Megaphone,
 } from "lucide-react"
 
 const navItems = [
+  { label: "公告", href: "/announcements" },
   { label: "项目库", href: "/projects" },
   { label: "AI助手", href: "/ai-assistant" },
   { label: "协作广场", href: "/collaborate" },
-  { label: "社区", href: "/community" },
   { label: "关于", href: "/about" },
 ]
 
@@ -165,6 +166,13 @@ export function Header() {
                       {profile?.role === "admin" ? "管理员" : "用户"}
                     </p>
                   </div>
+                  <Link
+                    href="/announcements"
+                    className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-muted"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    <Megaphone className="h-4 w-4" /> 公告中心
+                  </Link>
                   <Link
                     href="/dashboard"
                     className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-muted"

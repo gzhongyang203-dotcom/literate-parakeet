@@ -1,3 +1,5 @@
+// Database type definitions for Supabase
+
 export type Project = {
   id: string
   title: string
@@ -64,6 +66,27 @@ export type Profile = {
   created_at: string
 }
 
+// 公告相关类型
+export type Announcement = {
+  id: string
+  title: string
+  content: string
+  is_pinned: boolean
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export type AnnouncementComment = {
+  id: string
+  announcement_id: string
+  user_id: string
+  content: string
+  created_at: string
+  user_nickname?: string
+  user_avatar?: string
+}
+
 export type Database = {
   public: {
     Tables: {
@@ -96,6 +119,16 @@ export type Database = {
         Row: { id: string; project_id: string; user_id: string; created_at: string }
         Insert: Omit<{ id: string; project_id: string; user_id: string; created_at: string }, "id" | "created_at">
         Update: never
+      }
+      announcements: {
+        Row: Announcement
+        Insert: Omit<Announcement, "id" | "created_at" | "updated_at">
+        Update: Partial<Omit<Announcement, "id">>
+      }
+      announcement_comments: {
+        Row: AnnouncementComment
+        Insert: Omit<AnnouncementComment, "id" | "created_at">
+        Update: Partial<Omit<AnnouncementComment, "id">>
       }
     }
   }
