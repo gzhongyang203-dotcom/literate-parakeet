@@ -62,17 +62,29 @@ export async function GET() {
     console.log("[QR API] 二维码 key:", qrcodeKey)
 
     // 2. 存入数据库（scanning 状态）
-    await supabase.from("bot_config").upsert({
+    const { error: dbError } = await supabase.from("bot_config").upsert({
       id: 1,
       qrcode_key: qrcodeKey,
       qrcode_url: qrcodeUrl,
       bot_status: "scanning",
       updated_at: new Date().toISOString(),
     })
+    
+    if (dbError) {
+      console.error("[QR API] 数据库写入失败:", dbError)
+      return NextResponse.json({ 
+        error: "数据库写入失败", 
+        detail: dbError.message,
+        code: dbError.code
+      }, { status: 500 })
+    }
+    
+    console.log("[QR API] 数据库写入成功:", { qrcodeKey, qrcodeUrl: qrcodeUrl.slice(0, 50) })
 
     return NextResponse.json({
       qrcode_url: qrcodeUrl,
       qrcode_key: qrcodeKey,
+      status: "scanning"
     })
   } catch (err: any) {
     console.error("[iLink QR] error:", err)
