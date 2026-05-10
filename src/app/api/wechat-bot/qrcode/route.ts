@@ -54,10 +54,12 @@ export async function GET() {
       }, { status: 500 })
     }
 
-    // qrcode_img_content 是 base64 编码的 PNG 二进制
-    // 需要正确拼接 data URI
-    const qrcodeUrl = `data:image/png;base64,${qrData.qrcode_img_content}`
-    const qrcodeKey = qrData.qrcode
+    // qrcode_img_content 是二维码图片的 URL（不是 base64！）
+    const qrcodeUrl = qrData.qrcode_img_content  // 直接使用 URL
+    const qrcodeKey = qrData.qrcode || qrData.qrcode_key
+    
+    console.log("[QR API] 二维码 URL:", qrcodeUrl)
+    console.log("[QR API] 二维码 key:", qrcodeKey)
 
     // 2. 存入数据库（scanning 状态）
     await supabase.from("bot_config").upsert({
