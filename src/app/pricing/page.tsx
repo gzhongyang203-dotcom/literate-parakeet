@@ -119,7 +119,7 @@ const ANXIETY_ITEMS = [
   },
 ]
 
-export function PricingContent() {
+function PricingContent() {
   const router = useRouter()
   const [user, setUser] = useState<any>(null)
   const [subscription, setSubscription] = useState<any>(null)
