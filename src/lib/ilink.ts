@@ -9,10 +9,19 @@ export function makeILinkHeaders() {
   const uin = Buffer.from(
     Math.floor(Math.random() * 0xFFFFFFFF).toString()
   ).toString("base64")
-  return {
+  
+  const headers: Record<string, string> = {
     "X-WECHAT-UIN": uin,
     "Content-Type": "application/json",
   }
+  
+  // 添加 API Key 认证（如果配置了）
+  const apiKey = process.env.ILINK_API_KEY
+  if (apiKey) {
+    headers["Authorization"] = `Bearer ${apiKey}`
+  }
+  
+  return headers
 }
 
 // 通用 POST 请求封装（带 Authorization）
