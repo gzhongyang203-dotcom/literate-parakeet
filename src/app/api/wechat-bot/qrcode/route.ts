@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
-import { makeILinkHeaders, ILINK_BASE } from "@/lib/ilink"
+import { getBotQRCode, checkQRCodeStatus } from "@/lib/ilink"
 
 // 获取 iLink 登录二维码
 export async function GET() {
@@ -21,14 +21,7 @@ export async function GET() {
     }
 
     // 1. 获取二维码
-    const qrRes = await fetch(
-      `${ILINK_BASE}/ilink/bot/get_bot_qrcode?bot_type=3`,
-      { headers: makeILinkHeaders() }
-    )
-    if (!qrRes.ok) {
-      return NextResponse.json({ error: `获取二维码失败: ${qrRes.status}` }, { status: 500 })
-    }
-    const qrData = await qrRes.json()
+    const qrData = await getBotQRCode()
     console.log("[iLink QR] response:", JSON.stringify(qrData).slice(0, 200))
 
     if (!qrData.qrcode_img_content) {

@@ -1,30 +1,30 @@
 // iLink 微信 Bot API 工具库
-// 文档：腾讯官方 iLink 协议（2026）
+// 官方协议文档（2026年3月22日发布）
 // Base URL: https://ilinkai.weixin.qq.com
 
 export const ILINK_BASE = "https://ilinkai.weixin.qq.com"
 
 // 生成防重放随机 uint32 的 base64
-export function makeILinkHeaders() {
+export function makeILinkHeaders(): Record<string, string> {
   const uin = Buffer.from(
     Math.floor(Math.random() * 0xFFFFFFFF).toString()
   ).toString("base64")
   
-  const headers: Record<string, string> = {
+  return {
     "X-WECHAT-UIN": uin,
     "Content-Type": "application/json",
   }
-  
-  // 添加 API Key 认证（如果配置了）
-  const apiKey = process.env.ILINK_API_KEY
-  if (apiKey) {
-    headers["Authorization"] = `Bearer ${apiKey}`
-  }
-  
+}
+
+// 生成带认证的请求头（登录后的所有请求必须用这个）
+export function makeILinkAuthHeaders(botToken: string): Record<string, string> {
+  const headers = makeILinkHeaders()
+  headers["AuthorizationType"] = "ilink_bot_token"
+  headers["Authorization"] = `Bearer ${botToken}`
   return headers
 }
 
-// 通用 POST 请求封装（带 Authorization）
+// 通用 POST 请求封装（带 Authorization，登录后使用）
 export async function iLinkPost(
   endpoint: string,
   body: any,
@@ -37,11 +37,7 @@ export async function iLinkPost(
   try {
     const res = await fetch(`${ILINK_BASE}/${endpoint}`, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${botToken}`,
-        "Content-Type": "application/json",
-        "X-WECHAT-UIN": makeILinkHeaders()["X-WECHAT-UIN"],
-      },
+      headers: makeILinkAuthHeaders(botToken),
       body: JSON.stringify(body),
       signal: controller.signal,
     })
@@ -61,18 +57,17 @@ export async function iLinkGet(
 ) {
   const qs = new URLSearchParams(params).toString()
   const url = `${ILINK_BASE}/${endpoint}${qs ? "?" + qs : ""}`
-  const headers: Record<string, string> = {
-    ...makeILinkHeaders(),
-  }
-  if (botToken) headers["Authorization"] = `Bearer ${botToken}`
-
+  const headers = botToken 
+    ? makeILinkAuthHeaders(botToken) 
+    : makeILinkHeaders()
+  
   const res = await fetch(url, { headers })
   return await res.json()
 }
 
 // ---------- 登录相关 ----------
 
-// 获取登录二维码
+// 获取登录二维码（不需要认证）
 export async function getBotQRCode() {
   const res = await fetch(
     `${ILINK_BASE}/ilink/bot/get_bot_qrcode?bot_type=3`,
