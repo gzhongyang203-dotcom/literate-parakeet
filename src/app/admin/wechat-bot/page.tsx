@@ -32,6 +32,9 @@ export default function WeChatBotAdminPage() {
   const [polling, setPolling] = useState(false)
   const [recentMessages, setRecentMessages] = useState<any[]>([])
 
+  const isOnline = botStatus?.status === "online"
+  const isScanning = botStatus?.status === "scanning"
+
   const fetchStatus = useCallback(async () => {
     try {
       const res = await fetch("/api/wechat-bot/status")
@@ -75,7 +78,7 @@ export default function WeChatBotAdminPage() {
 
   // 自动拉取消息：在线后递归长轮询
   useEffect(() => {
-    if (!isOnline) return
+    if (botStatus?.status !== "online") return
     let stopped = false
 
     async function loop() {
@@ -94,7 +97,7 @@ export default function WeChatBotAdminPage() {
 
     loop()
     return () => { stopped = true }
-  }, [isOnline])
+  }, [botStatus?.status, fetchMessages])
 
   const handleGetQR = async () => {
     setGettingQR(true)
@@ -155,9 +158,6 @@ export default function WeChatBotAdminPage() {
       </div>
     )
   }
-
-  const isOnline = botStatus?.status === "online"
-  const isScanning = botStatus?.status === "scanning"
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl">
