@@ -73,6 +73,29 @@ export default function WeChatBotAdminPage() {
     }
   }, [botStatus?.status, fetchStatus])
 
+  // 自动拉取消息：在线后递归长轮询
+  useEffect(() => {
+    if (!isOnline) return
+    let stopped = false
+
+    async function loop() {
+      if (stopped) return
+      try {
+        const res = await fetch("/api/wechat-bot/poll", { method: "POST" })
+        const data = await res.json()
+        if (data.processed > 0) {
+          await fetchMessages()
+        }
+      } catch (err) {
+        console.error("[Auto Poll] error:", err)
+      }
+      if (!stopped) setTimeout(loop, 3000)
+    }
+
+    loop()
+    return () => { stopped = true }
+  }, [isOnline])
+
   const handleGetQR = async () => {
     setGettingQR(true)
     try {
@@ -89,18 +112,21 @@ export default function WeChatBotAdminPage() {
     }
   }
 
-  const handlePoll = async () => {
-    setPolling(true)
+  const handlePoll = async (silent = false) => {
+    if (!silent) setPolling(true)
     try {
       const res = await fetch("/api/wechat-bot/poll", { method: "POST" })
       const data = await res.json()
-      alert(data.error || `处理完成，收到 ${data.processed || 0} 条消息`)
+      if (!silent) {
+        alert(data.error || `处理完成，收到 ${data.processed || 0} 条消息`)
+      }
       await fetchStatus()
       await fetchMessages()
     } catch (err: any) {
-      alert(`轮询失败: ${err.message}`)
+      if (!silent) alert(`轮询失败: ${err.message}`)
+      console.error("[Auto Poll] error:", err)
     } finally {
-      setPolling(false)
+      if (!silent) setPolling(false)
     }
   }
 
@@ -226,16 +252,19 @@ export default function WeChatBotAdminPage() {
           {isOnline && (
             <div className="space-y-3">
               <div className="flex gap-3">
-                <Button onClick={handlePoll} disabled={polling} className="flex-1">
-                  {polling ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <MessageSquare className="h-4 w-4 mr-2" />}
-                  立即拉取消息
+                <Button disabled className="flex-1">
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  自动拉取中...
                 </Button>
                 <Button variant="destructive" onClick={handleLogout}>
                   注销 Bot
                 </Button>
               </div>
+              <p className="text-xs text-green-600">
+                ✅ 消息自动拉取已启用（每收到消息立即处理）
+              </p>
               <p className="text-xs text-muted-foreground">
-                💡 生产环境建议配置 Vercel Cron 自动拉取消息（每 10s 一次）
+                💡 生产环境建议配置 Vercel Cron 作为保底（每 1 分钟）
               </p>
             </div>
           )}

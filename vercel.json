@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/wechat-bot/poll",
+      "schedule": "* * * * *"
+    }
+  ]
+}
