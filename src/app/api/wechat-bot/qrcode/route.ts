@@ -25,6 +25,9 @@ export async function GET() {
       `${ILINK_BASE}/ilink/bot/get_bot_qrcode?bot_type=3`,
       { headers: makeILinkHeaders() }
     )
+    if (!qrRes.ok) {
+      return NextResponse.json({ error: `获取二维码失败: ${qrRes.status}` }, { status: 500 })
+    }
     const qrData = await qrRes.json()
     console.log("[iLink QR] response:", JSON.stringify(qrData).slice(0, 200))
 

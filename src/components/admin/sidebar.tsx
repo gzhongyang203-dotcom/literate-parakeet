@@ -17,7 +17,7 @@ import {
   X,
   ArrowLeft,
   Megaphone,
-  BotMessageSquare,
+  Bot,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase/client"
@@ -26,7 +26,7 @@ import { useState } from "react"
 const sidebarItems = [
   { label: "仪表盘", href: "/admin", icon: LayoutDashboard },
   { label: "公告管理", href: "/admin/announcements", icon: Megaphone },
-  { label: "微信Bot", href: "/admin/wechat-bot", icon: BotMessageSquare },
+  { label: "微信Bot", href: "/admin/wechat-bot", icon: Bot },
   { label: "项目管理", href: "/admin/projects", icon: FileText },
   { label: "用户管理", href: "/admin/users", icon: Users },
   { label: "协作管理", href: "/admin/collaborations", icon: Handshake },
