@@ -193,9 +193,26 @@ export default function WeChatBotAdminPage() {
             <div className="text-center py-4">
               <p className="text-sm text-muted-foreground mb-3">请用微信扫描下方二维码登录 Bot</p>
               <div className="inline-block p-4 bg-white rounded-xl border shadow-sm">
-                <img src={botStatus.qrcode_url} alt="微信Bot登录二维码" className="w-48 h-48" />
+                <a href={botStatus.qrcode_url} target="_blank" rel="noopener noreferrer">
+                  <img 
+                    src={botStatus.qrcode_url} 
+                    alt="微信Bot登录二维码" 
+                    className="w-48 h-48"
+                    onError={(e) => {
+                      // 如果图片加载失败，显示链接让用户直接访问
+                      const target = e.target as HTMLImageElement
+                      target.style.display = 'none'
+                      const parent = target.parentElement
+                      if (parent) {
+                        parent.innerHTML = `<p className="text-sm text-blue-500">点击这里打开二维码</p>`
+                      }
+                    }}
+                  />
+                </a>
               </div>
-              <p className="text-xs text-muted-foreground mt-3">扫码并在微信中确认授权...</p>
+              <p className="text-xs text-muted-foreground mt-3">
+                如果二维码无法显示，<a href={botStatus.qrcode_url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">点击这里在新窗口打开</a>
+              </p>
             </div>
           )}
 
