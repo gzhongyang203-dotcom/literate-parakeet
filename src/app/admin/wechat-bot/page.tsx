@@ -191,28 +191,34 @@ export default function WeChatBotAdminPage() {
           {/* 二维码展示 */}
           {isScanning && botStatus?.qrcode_url && (
             <div className="text-center py-4">
-              <p className="text-sm text-muted-foreground mb-3">请用微信扫描下方二维码登录 Bot</p>
-              <div className="inline-block p-4 bg-white rounded-xl border shadow-sm">
-                <a href={botStatus.qrcode_url} target="_blank" rel="noopener noreferrer">
-                  <img 
-                    src={botStatus.qrcode_url} 
-                    alt="微信Bot登录二维码" 
-                    className="w-48 h-48"
-                    onError={(e) => {
-                      // 如果图片加载失败，显示链接让用户直接访问
-                      const target = e.target as HTMLImageElement
-                      target.style.display = 'none'
-                      const parent = target.parentElement
-                      if (parent) {
-                        parent.innerHTML = `<p className="text-sm text-blue-500">点击这里打开二维码</p>`
-                      }
-                    }}
-                  />
-                </a>
+              <p className="text-sm text-muted-foreground mb-3">请用微信扫描二维码登录 Bot</p>
+              <div className="inline-block p-6 bg-gradient-to-br from-green-50 to-blue-50 rounded-xl border shadow-sm">
+                <div className="text-center space-y-3">
+                  <div className="w-16 h-16 rounded-full bg-green-500 flex items-center justify-center mx-auto">
+                    <QrCode className="h-8 w-8 text-white" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-green-700">二维码已生成</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      点击下方按钮，用微信扫码
+                    </p>
+                  </div>
+                  <a 
+                    href={botStatus.qrcode_url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-block"
+                  >
+                    <Button className="bg-green-500 hover:bg-green-600 text-white">
+                      <QrCode className="h-4 w-4 mr-2" />
+                      点击这里用微信扫码
+                    </Button>
+                  </a>
+                  <p className="text-xs text-muted-foreground">
+                    或复制链接到浏览器打开
+                  </p>
+                </div>
               </div>
-              <p className="text-xs text-muted-foreground mt-3">
-                如果二维码无法显示，<a href={botStatus.qrcode_url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">点击这里在新窗口打开</a>
-              </p>
             </div>
           )}
 
