@@ -46,10 +46,15 @@ export async function GET() {
     console.log("[iLink QR] response:", JSON.stringify(qrData).slice(0, 200))
 
     if (!qrData.qrcode_img_content) {
-      console.error("[iLink QR] 获取二维码失败，完整响应:", JSON.stringify(qrData).slice(0, 1000))
+      console.error("[iLink QR] 获取二维码失败")
+      console.error("[iLink QR] status:", qrData.status)
+      console.error("[iLink QR] msg:", qrData.msg)
+      console.error("[iLink QR] 完整响应 (前500字符):", JSON.stringify(qrData).slice(0, 500))
+      
       return NextResponse.json({ 
         error: "获取二维码失败", 
-        detail: qrData,
+        ilink_status: qrData.status,
+        ilink_msg: qrData.msg,
         hint: "请检查 iLink API 是否返回了 qrcode_img_content 字段"
       }, { status: 500 })
     }
@@ -62,6 +67,11 @@ export async function GET() {
     console.log("[QR API] 二维码 key:", qrcodeKey)
 
     // 2. 存入数据库（scanning 状态）
+    console.log("[QR API] 准备写入数据库:", { 
+      qrcodeKey: qrcodeKey?.slice(0, 20), 
+      qrcodeUrlLength: qrcodeUrl?.length 
+    })
+    
     const { error: dbError } = await supabase.from("bot_config").upsert({
       id: 1,
       qrcode_key: qrcodeKey,
@@ -71,11 +81,18 @@ export async function GET() {
     })
     
     if (dbError) {
-      console.error("[QR API] 数据库写入失败:", dbError)
+      console.error("[QR API] 数据库写入失败!")
+      console.error("[QR API] 错误代码:", dbError.code)
+      console.error("[QR API] 错误消息:", dbError.message)
+      console.error("[QR API] 错误详情:", dbError.details)
+      console.error("[QR API] 错误 hint:", dbError.hint)
+      
       return NextResponse.json({ 
         error: "数据库写入失败", 
-        detail: dbError.message,
-        code: dbError.code
+        code: dbError.code,
+        message: dbError.message,
+        details: dbError.details,
+        hint: dbError.hint
       }, { status: 500 })
     }
     
