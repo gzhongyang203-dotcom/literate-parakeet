@@ -134,5 +134,5 @@ export async function POST() {
 
 // GET /api/wechat-bot/poll - 也支持 GET（供 Cron 调用）
 export async function GET() {
-  return POST(new Request("http://localhost/api/wechat-bot/poll", { method: "POST" }))
+  return POST()
 }
