@@ -17,12 +17,20 @@ import {
   Crown,
   Zap,
   Megaphone,
+  MessageCircle,
+  Flame,
 } from "lucide-react"
 
 const navItems = [
   { label: "公告", href: "/announcements" },
   { label: "项目库", href: "/projects" },
   { label: "AI助手", href: "/ai-assistant" },
+  { 
+    label: "微信Bot", 
+    href: "/wechat-bot",
+    icon: Flame,
+    highlight: true 
+  },
   { label: "协作广场", href: "/collaborate" },
   { label: "关于", href: "/about" },
 ]
@@ -129,13 +137,20 @@ export function Header() {
               key={item.href}
               href={item.href}
               className={cn(
-                "text-sm font-medium transition-colors hover:text-primary",
+                "text-sm font-medium transition-colors hover:text-primary flex items-center gap-1.5",
                 pathname.startsWith(item.href)
                   ? "text-primary"
-                  : "text-muted-foreground"
+                  : "text-muted-foreground",
+                item.highlight && "text-orange-600 hover:text-orange-700 font-semibold"
               )}
             >
+              {item.icon && <item.icon className="h-4 w-4" />}
               {item.label}
+              {item.highlight && (
+                <span className="text-[10px] bg-orange-500 text-white px-1.5 py-0.5 rounded-full">
+                  热门
+                </span>
+              )}
             </Link>
           ))}
         </nav>
@@ -249,14 +264,21 @@ export function Header() {
               key={item.href}
               href={item.href}
               className={cn(
-                "block text-sm font-medium py-2",
+                "flex items-center gap-2 py-2 text-sm font-medium",
                 pathname.startsWith(item.href)
                   ? "text-primary"
-                  : "text-muted-foreground"
+                  : "text-muted-foreground",
+                item.highlight && "text-orange-600 font-semibold"
               )}
               onClick={() => setMobileOpen(false)}
             >
+              {item.icon && <item.icon className="h-4 w-4" />}
               {item.label}
+              {item.highlight && (
+                <span className="text-[10px] bg-orange-500 text-white px-1.5 py-0.5 rounded-full">
+                  热门
+                </span>
+              )}
             </Link>
           ))}
           <div className="pt-2 border-t flex gap-3">
