@@ -8,10 +8,8 @@ import {
   extractTextFromMessage,
   sleep,
 } from "@/lib/ilink"
-import { callDeepSeek } from "@/lib/ai-helper"
 
-// 调用 DeepSeek AI（复用已有逻辑）
-// 如果没有 ai-helper，直接用 fetch 调用
+// 调用 DeepSeek AI
 async function getAIReply(userMessage: string, fromUserName: string): Promise<string> {
   const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || ""
   if (!DEEPSEEK_API_KEY) return "AI 服务未配置，请联系管理员。"
