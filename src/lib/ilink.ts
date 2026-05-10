@@ -53,7 +53,6 @@ export async function iLinkGet(
   const qs = new URLSearchParams(params).toString()
   const url = `${ILINK_BASE}/${endpoint}${qs ? "?" + qs : ""}`
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
     ...makeILinkHeaders(),
   }
   if (botToken) headers["Authorization"] = `Bearer ${botToken}`
