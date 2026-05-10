@@ -25,7 +25,12 @@ export async function GET() {
     console.log("[iLink QR] response:", JSON.stringify(qrData).slice(0, 200))
 
     if (!qrData.qrcode_img_content) {
-      return NextResponse.json({ error: "获取二维码失败", detail: qrData }, { status: 500 })
+      console.error("[iLink QR] 获取二维码失败，完整响应:", JSON.stringify(qrData).slice(0, 1000))
+      return NextResponse.json({ 
+        error: "获取二维码失败", 
+        detail: qrData,
+        hint: "请检查 iLink API 是否返回了 qrcode_img_content 字段"
+      }, { status: 500 })
     }
 
     // qrcode_img_content 是 base64 编码的 PNG 二进制

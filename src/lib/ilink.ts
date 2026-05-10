@@ -69,11 +69,31 @@ export async function iLinkGet(
 
 // 获取登录二维码（不需要认证）
 export async function getBotQRCode() {
-  const res = await fetch(
-    `${ILINK_BASE}/ilink/bot/get_bot_qrcode?bot_type=3`,
-    { headers: makeILinkHeaders() }
-  )
-  return await res.json()
+  const url = `${ILINK_BASE}/ilink/bot/get_bot_qrcode?bot_type=3`
+  const headers = makeILinkHeaders()
+  
+  console.log("[iLink] getBotQRCode URL:", url)
+  console.log("[iLink] getBotQRCode headers:", JSON.stringify(headers))
+  
+  const res = await fetch(url, { 
+    method: "GET",
+    headers: {
+      ...headers,
+      "Accept": "application/json",
+    }
+  })
+  
+  console.log("[iLink] getBotQRCode status:", res.status)
+  console.log("[iLink] getBotQRCode content-type:", res.headers.get("content-type"))
+  
+  const text = await res.text()
+  console.log("[iLink] getBotQRCode response (first 500 chars):", text.slice(0, 500))
+  
+  try {
+    return JSON.parse(text)
+  } catch {
+    return { raw: text, parse_error: "response is not JSON" }
+  }
 }
 
 // 单次查询扫码状态（供前端轮询调用）
