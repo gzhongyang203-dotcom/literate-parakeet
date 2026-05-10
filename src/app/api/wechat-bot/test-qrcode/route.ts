@@ -25,7 +25,8 @@ export async function GET() {
       message: "iLink API 工作正常",
       qrcode_url: qrcodeUrl,
       qrcode_key: qrData.qrcode,
-      ilink_raw: qrData
+      ilink_status: qrData.status,
+      ilink_msg: qrData.msg
     })
     
   } catch (err: any) {
