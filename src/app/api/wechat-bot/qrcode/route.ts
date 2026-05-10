@@ -5,19 +5,40 @@ import { getBotQRCode, checkQRCodeStatus } from "@/lib/ilink"
 // 获取 iLink 登录二维码
 export async function GET() {
   try {
+    console.log("[QR API] 开始处理请求")
+    
     const supabase = await createClient()
+    console.log("[QR API] Supabase client 创建成功")
 
     // 鉴权：仅管理员
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: "未登录" }, { status: 401 })
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    console.log("[QR API] 鉴权结果:", { user: user?.id, error: authError?.message })
+    
+    if (authError || !user) {
+      console.error("[QR API] 鉴权失败:", authError)
+      return NextResponse.json({ 
+        error: "未登录", 
+        detail: authError?.message,
+        hint: "请确认已登录管理员账号"
+      }, { status: 401 })
+    }
 
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("role")
       .eq("id", user.id)
       .single()
-    if (profile?.role !== "admin") {
-      return NextResponse.json({ error: "无权限" }, { status: 403 })
+    
+    console.log("[QR API] 角色查询结果:", { profile, profileError })
+    
+    if (profileError || profile?.role !== "admin") {
+      console.error("[QR API] 权限验证失败:", profileError)
+      return NextResponse.json({ 
+        error: "无权限", 
+        detail: profileError?.message,
+        code: profileError?.code,
+        hint: "请确认用户角色是否为admin，或profiles表是否存在"
+      }, { status: 403 })
     }
 
     // 1. 获取二维码
