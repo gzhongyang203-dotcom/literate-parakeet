@@ -21,7 +21,14 @@ import {
   Flame,
 } from "lucide-react"
 
-const navItems = [
+interface NavItem {
+  label: string
+  href: string
+  icon?: React.ComponentType<{ className?: string }>
+  highlight?: boolean
+}
+
+const navItems: NavItem[] = [
   { label: "公告", href: "/announcements" },
   { label: "项目库", href: "/projects" },
   { label: "AI助手", href: "/ai-assistant" },
@@ -29,7 +36,7 @@ const navItems = [
     label: "微信Bot", 
     href: "/wechat-bot",
     icon: Flame,
-    highlight: true 
+    highlight: true
   },
   { label: "协作广场", href: "/collaborate" },
   { label: "关于", href: "/about" },
