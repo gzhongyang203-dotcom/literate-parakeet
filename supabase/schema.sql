@@ -246,6 +246,48 @@ CREATE INDEX IF NOT EXISTS idx_announcements_pinned ON announcements(is_pinned);
 CREATE INDEX IF NOT EXISTS idx_announcement_comments ON announcement_comments(announcement_id);
 
 -- =============================================
+-- 9. Bot 配置表 (bot_config)
+-- 存储 iLink 微信Bot登录凭证
+-- =============================================
+CREATE TABLE IF NOT EXISTS bot_config (
+  id INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),  -- 强制单行
+  bot_token TEXT,
+  base_url TEXT DEFAULT 'https://ilinkai.weixin.qq.com',
+  qrcode_key TEXT,
+  qrcode_url TEXT,
+  bot_status TEXT DEFAULT 'offline' CHECK (bot_status IN ('offline', 'scanning', 'online')),
+  last_poll_cursor TEXT DEFAULT '',
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 只有管理员能读写
+ALTER TABLE bot_config ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Admins can manage bot_config" ON bot_config;
+CREATE POLICY "Admins can manage bot_config" ON bot_config
+  FOR ALL USING (
+    EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.role = 'admin')
+  );
+
+-- =============================================
+-- 微信Bot消息日志表 (bot_messages)
+-- 记录用户与Bot的对话历史
+-- =============================================
+CREATE TABLE IF NOT EXISTS bot_messages (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  from_user_id TEXT NOT NULL,
+  from_user_name TEXT,
+  message_text TEXT,
+  reply_text TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+ALTER TABLE bot_messages ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Admins can view bot_messages" ON bot_messages;
+CREATE POLICY "Admins can view bot_messages" ON bot_messages
+  FOR SELECT USING (
+    EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.role = 'admin')
+  );
+
+-- =============================================
 -- 完成提示
 -- =============================================
 SELECT '✅ 数据库设置完成!' AS status;
