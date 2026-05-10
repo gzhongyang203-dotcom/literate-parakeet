@@ -1,5 +1,6 @@
 "use client"
 
+import { useMemo } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Sparkles, Clock, Calendar, ArrowRight, CheckCircle, Zap, Users } from "lucide-react"
@@ -15,18 +16,31 @@ interface UpcomingItem {
 
 const UPCOMING = [
   {
-    daysLater: 1,
     title: "抖音流量池机制深度解析",
     category: "短视频",
     teaser: "9层流量池晋级逻辑、算法推荐核心公式",
   },
   {
-    daysLater: 4,
     title: "快手老铁经济变现路径",
     category: "短视频",
     teaser: "从0粉到月入过万的完整闭环",
   },
 ]
+
+// 动态计算即将更新的日期（每3天更新一个项目）
+function getUpcomingDates() {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  
+  // 找到下一个更新日（从今天起每3天）
+  const nextUpdate1 = new Date(today)
+  nextUpdate1.setDate(today.getDate() + 3)
+  
+  const nextUpdate2 = new Date(nextUpdate1)
+  nextUpdate2.setDate(nextUpdate1.getDate() + 3)
+  
+  return [nextUpdate1, nextUpdate2]
+}
 
 // 深度钩子文案
 const HOOKS = [
@@ -45,6 +59,7 @@ const HOOKS = [
 ]
 
 export function DailyUpdatePreview() {
+  const upcomingDates = useMemo(() => getUpcomingDates(), [])
   return (
     <section className="py-6">
       <div className="container mx-auto px-4">
@@ -141,12 +156,12 @@ export function DailyUpdatePreview() {
             </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {UPCOMING.map((item) => {
+              {UPCOMING.map((item, index) => {
+                const date = upcomingDates[index]
                 const today = new Date()
-                const date = new Date(today)
-                date.setDate(date.getDate() + item.daysLater)
+                const daysLater = Math.max(1, Math.ceil((date.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)))
                 const dateLabel = `${date.getMonth() + 1}月${date.getDate()}日`
-                const dayLabel = `${item.daysLater}天后`
+                const dayLabel = `${daysLater}天后`
                 return (
                   <div
                     key={dateLabel}
