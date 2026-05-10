@@ -29,12 +29,13 @@ export default function WeChatBotAdminPage() {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [gettingQR, setGettingQR] = useState(false)
-  const [polling, setPolling] = useState(false)
   const [recentMessages, setRecentMessages] = useState<any[]>([])
 
+  // 派生状态，放在所有 useEffect 之前
   const isOnline = botStatus?.status === "online"
   const isScanning = botStatus?.status === "scanning"
 
+  // ─── 数据获取 ───────────────────────────────
   const fetchStatus = useCallback(async () => {
     try {
       const res = await fetch("/api/wechat-bot/status")
@@ -63,25 +64,26 @@ export default function WeChatBotAdminPage() {
     }
   }, [])
 
+  // 初始加载
   useEffect(() => {
     fetchStatus()
     fetchMessages()
   }, [fetchStatus, fetchMessages])
 
-  // 自动刷新：扫码中每 3s 查一次状态
+  // ─── 扫码中：每 3s 刷新一次状态 ───────────
   useEffect(() => {
-    if (botStatus?.status === "scanning") {
-      const tid = setInterval(fetchStatus, 3000)
-      return () => clearInterval(tid)
-    }
-  }, [botStatus?.status, fetchStatus])
+    if (!isScanning) return
+    const tid = setInterval(fetchStatus, 3000)
+    return () => clearInterval(tid)
+  }, [isScanning, fetchStatus])
 
-  // 自动拉取消息：在线后递归长轮询
+  // ─── 在线后：自动轮询消息（递归，不停） ──
   useEffect(() => {
-    if (botStatus?.status !== "online") return
+    if (!isOnline) return
     let stopped = false
+    let timer: ReturnType<typeof setTimeout>
 
-    async function loop() {
+    async function pollOnce() {
       if (stopped) return
       try {
         const res = await fetch("/api/wechat-bot/poll", { method: "POST" })
@@ -89,47 +91,34 @@ export default function WeChatBotAdminPage() {
         if (data.processed > 0) {
           await fetchMessages()
         }
-      } catch (err) {
-        console.error("[Auto Poll] error:", err)
+      } catch (err: any) {
+        // AbortError 是正常超时，不报错
+        if (err.name !== "AbortError") {
+          console.error("[AutoPoll] error:", err)
+        }
       }
-      if (!stopped) setTimeout(loop, 3000)
+      if (!stopped) timer = setTimeout(pollOnce, 3000)
     }
 
-    loop()
-    return () => { stopped = true }
-  }, [botStatus?.status, fetchMessages])
+    pollOnce()
+    return () => {
+      stopped = true
+      clearTimeout(timer)
+    }
+  }, [isOnline, fetchMessages])
 
+  // ─── 操作函数 ────────────────────────────────
   const handleGetQR = async () => {
     setGettingQR(true)
     try {
       const res = await fetch("/api/wechat-bot/qrcode")
       const data = await res.json()
-      if (data.error) {
-        alert(`错误: ${data.error}`)
-      }
+      if (data.error) alert(`错误: ${data.error}`)
       await fetchStatus()
     } catch (err: any) {
       alert(`获取二维码失败: ${err.message}`)
     } finally {
       setGettingQR(false)
-    }
-  }
-
-  const handlePoll = async (silent = false) => {
-    if (!silent) setPolling(true)
-    try {
-      const res = await fetch("/api/wechat-bot/poll", { method: "POST" })
-      const data = await res.json()
-      if (!silent) {
-        alert(data.error || `处理完成，收到 ${data.processed || 0} 条消息`)
-      }
-      await fetchStatus()
-      await fetchMessages()
-    } catch (err: any) {
-      if (!silent) alert(`轮询失败: ${err.message}`)
-      console.error("[Auto Poll] error:", err)
-    } finally {
-      if (!silent) setPolling(false)
     }
   }
 
@@ -150,6 +139,7 @@ export default function WeChatBotAdminPage() {
     }
   }
 
+  // ─── 加载中 ──────────────────────────────────
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-16 text-center">
@@ -159,8 +149,10 @@ export default function WeChatBotAdminPage() {
     )
   }
 
+  // ─── 主界面 ──────────────────────────────────
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl">
+      {/* 标题栏 */}
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold">微信 AI 助手管理</h1>
@@ -198,6 +190,7 @@ export default function WeChatBotAdminPage() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* 离线状态 */}
           {!isOnline && !isScanning && (
             <div className="text-center py-6">
               <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
@@ -207,7 +200,7 @@ export default function WeChatBotAdminPage() {
               <p className="text-sm text-muted-foreground mb-4">
                 点击下方按钮获取二维码，用微信扫码登录
               </p>
-              <Button onClick={handleGetQR} disabled={gettingQR || isScanning}>
+              <Button onClick={handleGetQR} disabled={gettingQR}>
                 {gettingQR ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <QrCode className="h-4 w-4 mr-2" />}
                 获取登录二维码
               </Button>
@@ -225,34 +218,25 @@ export default function WeChatBotAdminPage() {
                   </div>
                   <div>
                     <p className="font-medium text-green-700">二维码已生成</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      点击下方按钮，用微信扫码
-                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">点击下方按钮，用微信扫码</p>
                   </div>
-                  <a 
-                    href={botStatus.qrcode_url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="inline-block"
-                  >
+                  <a href={botStatus.qrcode_url} target="_blank" rel="noopener noreferrer" className="inline-block">
                     <Button className="bg-green-500 hover:bg-green-600 text-white">
                       <QrCode className="h-4 w-4 mr-2" />
                       点击这里用微信扫码
                     </Button>
                   </a>
-                  <p className="text-xs text-muted-foreground">
-                    或复制链接到浏览器打开
-                  </p>
+                  <p className="text-xs text-muted-foreground">或复制链接到浏览器打开</p>
                 </div>
               </div>
             </div>
           )}
 
-          {/* 在线状态操作 */}
+          {/* 在线状态 */}
           {isOnline && (
             <div className="space-y-3">
               <div className="flex gap-3">
-                <Button disabled className="flex-1">
+                <Button disabled className="flex-1 cursor-not-allowed">
                   <MessageSquare className="h-4 w-4 mr-2" />
                   自动拉取中...
                 </Button>
@@ -260,12 +244,7 @@ export default function WeChatBotAdminPage() {
                   注销 Bot
                 </Button>
               </div>
-              <p className="text-xs text-green-600">
-                ✅ 消息自动拉取已启用（每收到消息立即处理）
-              </p>
-              <p className="text-xs text-muted-foreground">
-                💡 生产环境建议配置 Vercel Cron 作为保底（每 1 分钟）
-              </p>
+              <p className="text-xs text-green-600">✅ 消息自动拉取已启用（每 3 秒检查一次）</p>
             </div>
           )}
         </CardContent>
