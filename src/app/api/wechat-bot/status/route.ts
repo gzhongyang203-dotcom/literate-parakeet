@@ -80,10 +80,10 @@ export async function GET() {
       }
     }
 
-    // 3. 返回当前数据库状态
+    // 3. 返回当前数据库状态（包含二维码URL）
     const { data: updatedCfg } = await supabase
       .from("bot_config")
-      .select("bot_status")
+      .select("bot_status, qrcode_url")
       .eq("id", 1)
       .single()
 
@@ -91,6 +91,7 @@ export async function GET() {
       status: updatedCfg?.bot_status || "offline",
       has_token: !!cfg?.bot_token,
       base_url: cfg?.base_url || null,
+      qrcode_url: updatedCfg?.qrcode_url || cfg?.qrcode_url || null,
     })
   } catch (err: any) {
     console.error("[Bot Status] error:", err)
