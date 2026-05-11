@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:  # 支持手动触发
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -13,9 +13,6 @@ jobs:
     steps:
       - name: Trigger Vercel Deploy Hook
         run: |
-          curl -s -X POST "${{ vars.VERCEL_DEPLOY_HOOK_URL }}"
-        env:
-          # 如果你在 GitHub 仓库的 Settings → Variables 里设置了 VERCEL_DEPLOY_HOOK_URL
-          # 这里会自动读取。如果没设置，请取消注释下一行并填入你的 Deploy Hook URL：
-          # VERCEL_DEPLOY_HOOK_URL: https://api.vercel.com/v1/integrations/deploy/你的hook-id
-        if: vars.VERCEL_DEPLOY_HOOK_URL != ''
+          echo "Triggering Vercel deployment..."
+          curl -s -X POST "https://api.vercel.com/v1/integrations/deploy/prj_b0gba8jEDKxxTvCDDH7aFn1Twd58/ahLlS5er7J"
+          echo "Deploy hook triggered successfully."
