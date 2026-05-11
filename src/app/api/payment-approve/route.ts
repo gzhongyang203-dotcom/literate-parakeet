@@ -5,10 +5,21 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
 
-    // 验证管理员
+    // 验证登录
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
       return NextResponse.json({ error: "请先登录" }, { status: 401 })
+    }
+
+    // 验证管理员角色（修复：原来缺少这步！）
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single()
+
+    if (profile?.role !== "admin") {
+      return NextResponse.json({ error: "无权限（需要管理员）" }, { status: 403 })
     }
 
     const { id, action, notes } = await request.json()
