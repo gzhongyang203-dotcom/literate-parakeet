@@ -119,7 +119,7 @@ export async function checkQRCodeStatus(qrcodeKey: string) {
 
 // ---------- 消息接收 ----------
 
-// 长轮询获取消息（单次，最长等 35s）
+// 长轮询获取消息（单次，最长等 8s，避免 Vercel 10s 函数超时）
 export async function getUpdates(
   botToken: string,
   baseUrl: string,
@@ -133,7 +133,7 @@ export async function getUpdates(
       base_info: { channel_version: "1.0.2" },
     },
     botToken,
-    40000 // 40s timeout（比服务端35s稍长）
+    8500 // 8.5s timeout（小于 Vercel 10s 限制）
   )
 }
 
