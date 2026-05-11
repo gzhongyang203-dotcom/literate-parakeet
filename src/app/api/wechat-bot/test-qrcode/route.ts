@@ -18,8 +18,9 @@ export async function GET() {
       }, { status: 500 })
     }
     
-    const qrcodeUrl = `data:image/png;base64,${qrData.qrcode_img_content}`
-    
+    // iLink 返回的是 URL（不是 base64），直接使用
+    const qrcodeUrl = qrData.qrcode_img_content
+
     return NextResponse.json({
       success: true,
       message: "iLink API 工作正常",
