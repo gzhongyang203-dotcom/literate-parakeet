@@ -8,6 +8,9 @@ import { HeroBackground, SectionBackground } from "@/components/decorations"
 import { TrustStats, ActivityIndicator } from "@/components/trust-stats"
 import { DailyUpdatePreview } from "@/components/daily-update"
 import { SmartRecommendation } from "@/components/smart-recommendation"
+import { VirtualStats, OrderScroll, HotTags } from "@/components/virtual-data"
+import { MiniReviews } from "@/components/project-reviews"
+import { WechatQRCodeFloating } from "@/components/wechat-qrcode"
 
 const categories = [
   { name: "抖音", count: 8, icon: "🎵", color: "bg-black text-white border-gray-800/50", hoverColor: "group-hover:bg-gray-800" },
@@ -143,6 +146,20 @@ export default async function HomePage() {
 
       {/* ========== Trust Stats ========== */}
       <TrustStats />
+
+      {/* ========== 虚拟数据展示 ========== */}
+      <section className="py-8 bg-gradient-to-b from-white to-muted/20">
+        <div className="container mx-auto px-4 space-y-6">
+          {/* 实时数据 */}
+          <VirtualStats />
+
+          {/* 订单滚动 */}
+          <OrderScroll />
+
+          {/* 热门标签 */}
+          <HotTags />
+        </div>
+      </section>
 
       {/* ========== 每日更新预告 ========== */}
       <DailyUpdatePreview />
@@ -350,7 +367,7 @@ export default async function HomePage() {
                       <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
                     ))}
                   </div>
-                  <span className="text-sm font-medium">4.9 分</span>
+                  <span className="text-sm font-medium">4.9 分 · 98.6% 好评率</span>
                 </div>
                 <p className="text-sm text-muted-foreground">
                   "在这个平台找到了适合我的创业项目，跟着步骤做，第一个月就赚了 2000+"
@@ -358,6 +375,12 @@ export default async function HomePage() {
                 <p className="text-xs text-muted-foreground mt-1">—— 来自社区成员的真实反馈</p>
               </div>
             </div>
+          </div>
+
+          {/* 学员评价展示 */}
+          <div className="mt-8">
+            <h3 className="text-lg font-bold mb-4 text-center">🔥 最新学员评价</h3>
+            <MiniReviews />
           </div>
         </div>
       </section>
@@ -399,6 +422,9 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* ========== 悬浮客服按钮 ========== */}
+      <WechatQRCodeFloating />
     </div>
   )
 }

@@ -1,12 +1,13 @@
 "use client"
 
-import { Check, Zap, Sparkles, Crown, Loader2, AlertTriangle, TrendingUp, Clock, Users } from "lucide-react"
+import { Check, Zap, Sparkles, Crown, Loader2, AlertTriangle, TrendingUp, Clock, Users, ShoppingCart, Timer, Fire } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
+import { WechatQRCode } from "@/components/wechat-qrcode"
 
 const PLANS = [
   {
@@ -100,6 +101,15 @@ const STATS = [
   { icon: Clock, value: "快速启动", label: "平均启动周期", color: "text-purple-600" },
 ]
 
+// 虚拟今日订单
+const TODAY_ORDERS = [
+  { name: "张同学", location: "深圳", plan: "创业者套餐", time: "刚刚" },
+  { name: "李女士", location: "广州", plan: "合伙人套餐", time: "2分钟前" },
+  { name: "王先生", location: "北京", plan: "创业者套餐", time: "5分钟前" },
+  { name: "赵学员", location: "上海", plan: "创业者套餐", time: "8分钟前" },
+  { name: "周网友", location: "杭州", plan: "合伙人套餐", time: "12分钟前" },
+]
+
 // 焦虑文案
 const ANXIETY_ITEMS = [
   {
@@ -158,8 +168,8 @@ function PricingContent() {
   return (
     <div className="container mx-auto px-4 py-12">
       {/* 焦虑文案区 */}
-      <div className="max-w-3xl mx-auto mb-12">
-        <div className="bg-gradient-to-r from-red-50 to-orange-50 border border-red-100 rounded-2xl p-6 mb-8">
+      <div className="max-w-3xl mx-auto mb-8">
+        <div className="bg-gradient-to-r from-red-50 to-orange-50 border border-red-100 rounded-2xl p-6 mb-6">
           <div className="flex items-center gap-2 mb-4">
             <AlertTriangle className="h-5 w-5 text-red-500" />
             <span className="font-bold text-red-600">你可能正在犯的错</span>
@@ -176,6 +186,39 @@ function PricingContent() {
         </div>
       </div>
 
+      {/* 今日订单滚动 */}
+      <div className="max-w-3xl mx-auto mb-8">
+        <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Fire className="h-5 w-5 text-orange-500" />
+              <span className="font-bold text-orange-600">🔥 今日疯抢中</span>
+            </div>
+            <span className="text-xs text-green-600/70">今日已有 28 人订阅</span>
+          </div>
+          <div className="space-y-2">
+            {TODAY_ORDERS.map((order, index) => (
+              <div
+                key={index}
+                className={`flex items-center justify-between text-sm ${
+                  index === 0 ? "text-green-700 font-medium" : "text-green-600/80"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-green-400">✓</span>
+                  <span>{order.name}</span>
+                  <span className="text-green-400/60">·</span>
+                  <span>{order.location}</span>
+                  <span className="text-green-400/60">·</span>
+                  <span>订阅了 {order.plan}</span>
+                </div>
+                <span className="text-xs text-green-400/60">{order.time}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* 统计数据 */}
       <div className="max-w-3xl mx-auto mb-12">
         <div className="grid grid-cols-3 gap-4">
@@ -186,6 +229,21 @@ function PricingContent() {
               <div className="text-xs text-muted-foreground">{stat.label}</div>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* 限时优惠横幅 */}
+      <div className="max-w-3xl mx-auto mb-8">
+        <div className="bg-gradient-to-r from-amber-100 to-orange-100 border border-amber-300 rounded-xl p-4 text-center">
+          <div className="flex items-center justify-center gap-2 text-amber-700 mb-2">
+            <Timer className="h-5 w-5" />
+            <span className="font-bold">🔥 本月限时优惠</span>
+          </div>
+          <p className="text-sm text-amber-600">
+            创业者套餐 <span className="font-bold line-through text-amber-400">¥89</span>
+            <span className="font-bold text-red-500 ml-2">仅需 ¥29/月</span>
+          </p>
+          <p className="text-xs text-amber-500 mt-1">优惠截止：还剩 7 天 23 小时</p>
         </div>
       </div>
 
@@ -301,25 +359,36 @@ function PricingContent() {
       {/* 客服订阅说明 */}
       {!subscription && (
         <div className="max-w-2xl mx-auto mb-12">
-          <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-6 text-center">
-            <div className="text-3xl mb-3">💬</div>
-            <h3 className="font-bold text-lg mb-2">如何订阅？</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              点击上方「立即订阅」，然后<strong>添加客服微信 13785108266</strong><br />
-              转账后 <strong>30秒内</strong> 为您开通订阅权限
-            </p>
-            <div className="flex flex-wrap justify-center gap-3 text-sm">
-              <div className="flex items-center gap-1.5 bg-white rounded-full px-3 py-1.5 border">
-                <span className="text-green-500">✓</span> 微信支付
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-6">
+            <div className="text-center mb-4">
+              <h3 className="font-bold text-lg mb-2">💬 如何订阅？</h3>
+              <p className="text-sm text-muted-foreground">
+                扫码添加客服微信 <span className="font-bold text-green-600">gcy892</span><br />
+                转账后 <strong>30秒内</strong> 为您开通订阅权限
+              </p>
+            </div>
+
+            <div className="flex items-center gap-6 justify-center mb-4">
+              <div className="text-center">
+                <div className="relative mx-auto rounded-lg overflow-hidden border-2 border-green-200 w-28">
+                  <WechatQRCode />
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">👆 长按识别</p>
               </div>
-              <div className="flex items-center gap-1.5 bg-white rounded-full px-3 py-1.5 border">
-                <span className="text-green-500">✓</span> 支付宝
-              </div>
-              <div className="flex items-center gap-1.5 bg-white rounded-full px-3 py-1.5 border">
-                <span className="text-green-500">✓</span> 银行卡转账
-              </div>
-              <div className="flex items-center gap-1.5 bg-white rounded-full px-3 py-1.5 border">
-                <span className="text-green-500">✓</span> 7天退款保障
+
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center gap-2">
+                  <span className="text-green-500">✓</span> 微信支付
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-green-500">✓</span> 支付宝
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-green-500">✓</span> 银行卡转账
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-green-500">✓</span> 7天退款保障
+                </div>
               </div>
             </div>
           </div>

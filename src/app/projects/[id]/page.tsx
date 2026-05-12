@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { createClient } from "@/lib/supabase/server"
-import { CalendarDays, ArrowLeft, Eye, TrendingUp, Clock, Wallet } from "lucide-react"
+import { CalendarDays, ArrowLeft, Eye, TrendingUp, Clock, Wallet, Users, ShoppingCart, Timer } from "lucide-react"
 import { ProjectDetailClient } from "./client"
 import { ShareButton } from "./share-button"
 import ReactMarkdown from "react-markdown"
@@ -13,6 +13,9 @@ import { ReadingProgress } from "@/components/project/reading-progress"
 import { ProjectScoreboard } from "@/components/project/scoreboard"
 import { ToolChecklist } from "@/components/project/tool-checklist"
 import { ExecutionChecklist } from "@/components/project/execution-checklist"
+import { DetailedSteps } from "@/components/detailed-steps"
+import { ProjectReviews } from "@/components/project-reviews"
+import { WechatQRCodeCard } from "@/components/wechat-qrcode"
 
 // 项目评分数据
 const PROJECT_SCORES: Record<string, Array<{ label: string; score: number; desc: string }>> = {
@@ -165,6 +168,38 @@ export default async function ProjectDetailPage({
               <span>👤 {authorNickname}</span>
             </div>
 
+            {/* 虚拟数据展示 */}
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4 mb-8">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+                  </span>
+                  <span className="text-sm font-medium text-green-700">🔥 实时数据</span>
+                </div>
+                <span className="text-xs text-green-600/70">今日已帮助 28 人开始行动</span>
+              </div>
+              <div className="grid grid-cols-4 gap-3 text-center">
+                <div>
+                  <p className="text-lg font-bold text-green-600">328</p>
+                  <p className="text-xs text-green-600/70">正在学习</p>
+                </div>
+                <div>
+                  <p className="text-lg font-bold text-green-600">156</p>
+                  <p className="text-xs text-green-600/70">本月出单</p>
+                </div>
+                <div>
+                  <p className="text-lg font-bold text-green-600">4.9</p>
+                  <p className="text-xs text-green-600/70">项目评分</p>
+                </div>
+                <div>
+                  <p className="text-lg font-bold text-green-600">98%</p>
+                  <p className="text-xs text-green-600/70">好评率</p>
+                </div>
+              </div>
+            </div>
+
             {/* Quick stats row */}
             <div className="grid grid-cols-3 gap-3 mb-8">
               <div className="flex items-center gap-2 p-3 rounded-lg bg-green-50 border border-green-100">
@@ -202,9 +237,25 @@ export default async function ProjectDetailPage({
                 <p className="text-muted-foreground mb-6 max-w-md mx-auto">
                   此项目为付费内容，包含完整执行指南、工具链接、踩坑笔记和进阶玩法
                 </p>
+
+                {/* 限时优惠提示 */}
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6 max-w-sm mx-auto">
+                  <div className="flex items-center justify-center gap-2 text-amber-700 mb-2">
+                    <Timer className="h-4 w-4" />
+                    <span className="font-medium">限时优惠</span>
+                  </div>
+                  <p className="text-sm text-amber-600">
+                    🔥 今日特惠：创业者套餐仅需 <span className="font-bold">¥29/月</span>
+                  </p>
+                  <p className="text-xs text-amber-500 mt-1">
+                    已帮助 12,580+ 人开启副业之路
+                  </p>
+                </div>
+
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                   <Link href="/pricing">
-                    <Button size="lg" className="w-full sm:w-auto">
+                    <Button size="lg" className="w-full sm:w-auto bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
+                      <ShoppingCart className="h-4 w-4 mr-2" />
                       立即订阅解锁
                     </Button>
                   </Link>
@@ -229,6 +280,22 @@ export default async function ProjectDetailPage({
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>
                     {project.content || "*项目详情整理中...*"}
                   </ReactMarkdown>
+                </div>
+
+                {/* 详细执行步骤 */}
+                <div className="mb-10">
+                  <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                    <span>📋</span> 详细执行步骤
+                  </h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    每个步骤都包含实战技巧和示例，照着做就能出结果
+                  </p>
+                  <DetailedSteps />
+                </div>
+
+                {/* 学员评价 */}
+                <div className="mb-10 border rounded-xl p-6 bg-white">
+                  <ProjectReviews />
                 </div>
 
                 {/* Execution Checklist */}
@@ -301,8 +368,27 @@ export default async function ProjectDetailPage({
               </div>
             )}
 
+            {/* 微信客服二维码 */}
+            <WechatQRCodeCard title="遇到问题？扫码咨询" />
+
             {/* Collaboration */}
             <ProjectDetailClient projectId={project.id} />
+
+            {/* 今日行动提示 */}
+            <div className="rounded-xl border border-dashed border-primary/30 bg-primary/5 p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-lg">🎯</span>
+                <span className="font-medium text-sm">今日行动</span>
+              </div>
+              <p className="text-xs text-muted-foreground mb-3">
+                按照上方步骤，开始你的第一个项目
+              </p>
+              <Link href="/pricing">
+                <Button size="sm" className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600">
+                  订阅获取完整教程
+                </Button>
+              </Link>
+            </div>
 
             {/* Share */}
             <div className="rounded-xl border p-5">
