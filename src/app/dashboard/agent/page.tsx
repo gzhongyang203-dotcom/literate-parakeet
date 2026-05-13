@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Copy, Users, DollarSign, TrendingUp, QrCode, CheckCircle, Clock, Loader2 } from "lucide-react"
+import { QRCodeSVG } from "qrcode.react"
 
 // 类型定义
 interface AgentStats {
@@ -292,33 +293,18 @@ export default function AgentDashboardPage() {
             <DialogTitle>代理邀请二维码</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col items-center gap-4 py-4">
-            {/* 真实二维码图片 - 草料API生成 */}
-            <div className="w-48 h-48 bg-white rounded-xl flex items-center justify-center border-2 border-gray-200 overflow-hidden">
+            {/* 使用 qrcode.react 本地生成二维码 - 不依赖外部API */}
+            <div className="w-48 h-48 bg-white rounded-xl flex items-center justify-center border-2 border-gray-200 p-2">
               {stats?.inviteCode ? (
-                <img
-                  src={`https://api.2dcode.biz/v1/create-qr-code?data=https://literate-parakeet-mu.vercel.app/register?code=${stats.inviteCode}&size=300`}
-                  alt="邀请二维码"
-                  className="w-full h-full object-contain"
-                  crossOrigin="anonymous"
-                  onError={(e) => {
-                    // 加载失败隐藏图片，显示备用文字
-                    const target = e.currentTarget;
-                    target.style.display = 'none';
-                    const parent = target.parentElement;
-                    if (parent) {
-                      const fallback = parent.querySelector('.qr-fallback') as HTMLElement;
-                      if (fallback) fallback.style.display = 'flex';
-                    }
-                  }}
+                <QRCodeSVG
+                  value={`https://literate-parakeet-mu.vercel.app/register?code=${stats.inviteCode}`}
+                  size={180}
+                  level="M"
+                  includeMargin={false}
                 />
               ) : (
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
               )}
-              {/* 备用：纯文字版本 */}
-              <div className="qr-fallback hidden flex-col items-center justify-center p-4">
-                <span className="text-muted-foreground text-sm">邀请码</span>
-                <p className="font-bold text-primary text-lg mt-1">{stats?.inviteCode}</p>
-              </div>
             </div>
             <div className="text-center">
               <p className="text-sm text-muted-foreground">扫码注册，自动成为你的下级代理</p>
