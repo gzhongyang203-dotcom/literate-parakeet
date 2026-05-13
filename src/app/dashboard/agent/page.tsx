@@ -220,7 +220,7 @@ export default function AgentDashboardPage() {
               </div>
             </div>
             <p className="text-xs text-amber-600 mt-2">
-              {stats?.pendingSettlement > 0 ? "可立即结算" : "暂无待结算"}
+              {(stats?.pendingSettlement ?? 0) > 0 ? "可立即结算" : "暂无待结算"}
             </p>
           </CardContent>
         </Card>
