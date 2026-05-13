@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Copy, Users, DollarSign, TrendingUp, Share2, QrCode, CheckCircle, Clock } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Copy, Users, DollarSign, TrendingUp, QrCode, CheckCircle, Clock } from "lucide-react"
 
 // 模拟代理数据
 const MOCK_AGENTS = [
@@ -26,6 +26,7 @@ export default function AgentDashboardPage() {
   const [inviteCode] = useState("AGENT2026VIP")
   const [copied, setCopied] = useState(false)
   const [commissionRate, setCommissionRate] = useState(30)
+  const [showQRCode, setShowQRCode] = useState(false)
 
   const copyInviteCode = () => {
     navigator.clipboard.writeText(inviteCode)
@@ -120,24 +121,9 @@ export default function AgentDashboardPage() {
                   {copied ? <CheckCircle className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
                 </Button>
               </div>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-1">
-                    <QrCode className="h-4 w-4" /> 二维码
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>代理邀请二维码</DialogTitle>
-                  </DialogHeader>
-                  <div className="flex flex-col items-center gap-4 py-4">
-                    <div className="w-48 h-48 bg-gray-100 rounded-xl flex items-center justify-center border-2 border-dashed">
-                      <span className="text-muted-foreground text-sm">二维码生成中...</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground">扫码即可注册成为代理</p>
-                  </div>
-                </DialogContent>
-              </Dialog>
+              <Button variant="outline" size="sm" className="gap-1" onClick={() => setShowQRCode(true)}>
+                <QrCode className="h-4 w-4" /> 二维码
+              </Button>
             </div>
           </div>
 
@@ -162,8 +148,23 @@ export default function AgentDashboardPage() {
         </CardContent>
       </Card>
 
+      {/* 二维码弹窗 */}
+      <Dialog open={showQRCode} onOpenChange={setShowQRCode}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>代理邀请二维码</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col items-center gap-4 py-4">
+            <div className="w-48 h-48 bg-gray-100 rounded-xl flex items-center justify-center border-2 border-dashed">
+              <span className="text-muted-foreground text-sm">二维码生成中...</span>
+            </div>
+            <p className="text-sm text-muted-foreground">扫码即可注册成为代理</p>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* 代理列表和结算 */}
-      <Tabs defaultValue="agents" className="space-y-4">
+      <Tabs defaultValue="agents">
         <TabsList>
           <TabsTrigger value="agents">代理列表</TabsTrigger>
           <TabsTrigger value="settlements">结算记录</TabsTrigger>

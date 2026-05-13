@@ -10,10 +10,8 @@ interface DialogProps {
   children: React.ReactNode
 }
 
-export function Dialog({ open, onOpenChange, children }: DialogProps) {
-  if (!open) return null
-
-  return (
+export function Dialog({ open = false, onOpenChange, children }: DialogProps) {
+  return open ? (
     <div className="fixed inset-0 z-50">
       <div
         className="fixed inset-0 bg-black/50"
@@ -25,7 +23,7 @@ export function Dialog({ open, onOpenChange, children }: DialogProps) {
         </div>
       </div>
     </div>
-  )
+  ) : null
 }
 
 export function DialogContent({ children, className }: { children: React.ReactNode; className?: string }) {
