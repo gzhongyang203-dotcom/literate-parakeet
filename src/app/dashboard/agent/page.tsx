@@ -292,13 +292,28 @@ export default function AgentDashboardPage() {
             <DialogTitle>代理邀请二维码</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col items-center gap-4 py-4">
-            <div className="w-48 h-48 bg-gray-100 rounded-xl flex items-center justify-center border-2 border-dashed">
-              <span className="text-muted-foreground text-sm text-center px-4">
-                访问网站注册时<br />输入邀请码<br />
-                <strong className="text-primary">{stats?.inviteCode}</strong>
-              </span>
+            {/* 真实二维码图片（草料API生成） */}
+            <div className="w-48 h-48 bg-white rounded-xl flex items-center justify-center border-2 border-gray-200 overflow-hidden">
+              <img
+                src={`https://api.2dcode.biz/v1/create-qr-code?data=${encodeURIComponent(`https://literate-parakeet-mu.vercel.app/register?code=${stats?.inviteCode || ''}`)}&size=300x300`}
+                alt="邀请二维码"
+                className="w-full h-full object-contain"
+                onError={(e) => {
+                  // 如果二维码加载失败，显示邀请码文字
+                  e.currentTarget.style.display = 'none'
+                  e.currentTarget.nextElementSibling?.classList.remove('hidden')
+                }}
+              />
+              {/* 备用：纯文字版本 */}
+              <div className="hidden text-center p-4">
+                <span className="text-muted-foreground text-sm">邀请码</span>
+                <p className="font-bold text-primary text-lg mt-1">{stats?.inviteCode}</p>
+              </div>
             </div>
-            <p className="text-sm text-muted-foreground">或分享邀请码给好友</p>
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground">扫码注册，自动成为你的下级代理</p>
+              <p className="text-xs text-muted-foreground mt-1">或分享邀请码：<strong>{stats?.inviteCode}</strong></p>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
