@@ -187,7 +187,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "没有待结算的佣金" }, { status: 400 })
       }
 
-      const totalAmount = pendingCommissions.reduce((sum, c) => sum + Number(c.commission_amount), 0)
+      const totalAmount = pendingCommissions.reduce((sum: number, c: { commission_amount: unknown }) => sum + Number(c.commission_amount), 0)
       const now = new Date().toISOString()
 
       // 创建结算记录
@@ -200,7 +200,7 @@ export async function POST(request: Request) {
       })
 
       // 更新佣金状态为已结算
-      const commissionIds = pendingCommissions.map((c) => c.id)
+      const commissionIds = pendingCommissions.map((c: { id: unknown }) => c.id)
       await supabase
         .from("agent_commissions")
         .update({ status: "settled", settled_at: now })
