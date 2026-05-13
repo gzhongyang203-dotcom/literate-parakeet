@@ -1,43 +1,160 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Copy, Users, DollarSign, TrendingUp, QrCode, CheckCircle, Clock } from "lucide-react"
+import { Copy, Users, DollarSign, TrendingUp, QrCode, CheckCircle, Clock, Loader2 } from "lucide-react"
 
-// 模拟代理数据
-const MOCK_AGENTS = [
-  { id: 1, name: "代理A", phone: "138****1234", status: "active", joinDate: "2026-05-01", totalEarnings: 2580, todayEarnings: 320, customers: 45 },
-  { id: 2, name: "代理B", phone: "139****5678", status: "active", joinDate: "2026-05-05", totalEarnings: 1200, todayEarnings: 150, customers: 22 },
-  { id: 3, name: "代理C", phone: "137****9012", status: "pending", joinDate: "2026-05-10", totalEarnings: 0, todayEarnings: 0, customers: 0 },
-]
+// 类型定义
+interface AgentStats {
+  inviteCode: string
+  commissionRate: number
+  totalAgents: number
+  activeAgents: number
+  totalEarnings: number
+  pendingSettlement: number
+  todayEarnings: number
+}
 
-const MOCK_SETTLEMENTS = [
-  { id: 1, date: "2026-05-12", amount: 580, status: "settled", agentName: "代理A" },
-  { id: 2, date: "2026-05-11", amount: 320, status: "settled", agentName: "代理B" },
-  { id: 3, date: "2026-05-12", amount: 450, status: "pending", agentName: "代理A" },
-]
+interface Agent {
+  id: string
+  user_id: string
+  nickname: string
+  phone: string
+  status: string
+  todayEarnings: number
+  totalEarnings: number
+  totalCustomers: number
+  joinDate: string
+  commission_rate: number
+}
+
+interface Settlement {
+  id: string
+  amount: number
+  status: string
+  payment_method?: string
+  created_at: string
+}
 
 export default function AgentDashboardPage() {
-  const [inviteCode] = useState("AGENT2026VIP")
+  const [loading, setLoading] = useState(true)
+  const [stats, setStats] = useState<AgentStats | null>(null)
+  const [agents, setAgents] = useState<Agent[]>([])
+  const [settlements, setSettlements] = useState<Settlement[]>([])
   const [copied, setCopied] = useState(false)
   const [commissionRate, setCommissionRate] = useState(30)
   const [showQRCode, setShowQRCode] = useState(false)
+  const [savingRate, setSavingRate] = useState(false)
+  const [settling, setSettling] = useState(false)
+
+  // 加载数据
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  const loadData = async () => {
+    setLoading(true)
+    try {
+      // 并行获取统计数据和代理列表
+      const [statsRes, agentsRes, settlementsRes] = await Promise.all([
+        fetch("/api/agents?type=stats"),
+        fetch("/api/agents?type=list"),
+        fetch("/api/agents?type=settlements"),
+      ])
+
+      if (statsRes.ok) {
+        const statsData = await statsRes.json()
+        setStats(statsData)
+        setCommissionRate(statsData.commissionRate)
+      }
+
+      if (agentsRes.ok) {
+        const agentsData = await agentsRes.json()
+        setAgents(agentsData)
+      }
+
+      if (settlementsRes.ok) {
+        const settlementsData = await settlementsRes.json()
+        setSettlements(settlementsData)
+      }
+    } catch (error) {
+      console.error("加载代理数据失败:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const copyInviteCode = () => {
-    navigator.clipboard.writeText(inviteCode)
+    if (!stats?.inviteCode) return
+    navigator.clipboard.writeText(stats.inviteCode)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const totalAgents = MOCK_AGENTS.length
-  const activeAgents = MOCK_AGENTS.filter(a => a.status === "active").length
-  const totalEarnings = MOCK_AGENTS.reduce((sum, a) => sum + a.totalEarnings, 0)
-  const pendingSettlement = MOCK_SETTLEMENTS.filter(s => s.status === "pending").reduce((sum, s) => sum + s.amount, 0)
+  const saveCommissionRate = async () => {
+    setSavingRate(true)
+    try {
+      const res = await fetch("/api/agents?action=updateCommissionRate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ commissionRate }),
+      })
+
+      if (res.ok) {
+        alert("分佣比例已更新！")
+      } else {
+        const data = await res.json()
+        alert(data.error || "更新失败")
+      }
+    } catch (error) {
+      alert("更新失败")
+    } finally {
+      setSavingRate(false)
+    }
+  }
+
+  const handleSettle = async () => {
+    if (settling) return
+    if (!confirm("确认结算所有待结算佣金？")) return
+
+    setSettling(true)
+    try {
+      const res = await fetch("/api/agents?action=settle", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        alert(`结算成功！金额: ¥${data.amount}`)
+        loadData() // 刷新数据
+      } else {
+        const data = await res.json()
+        alert(data.error || "结算失败")
+      }
+    } catch (error) {
+      alert("结算失败")
+    } finally {
+      setSettling(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-6xl flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+          <p className="text-muted-foreground">加载中...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
@@ -53,13 +170,13 @@ export default function AgentDashboardPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">下级代理</p>
-                <p className="text-2xl font-bold">{totalAgents}人</p>
+                <p className="text-2xl font-bold">{stats?.totalAgents || 0}人</p>
               </div>
               <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center">
                 <Users className="h-5 w-5 text-blue-600" />
               </div>
             </div>
-            <p className="text-xs text-green-600 mt-2">{activeAgents}人活跃</p>
+            <p className="text-xs text-green-600 mt-2">{stats?.activeAgents || 0}人活跃</p>
           </CardContent>
         </Card>
         <Card>
@@ -67,7 +184,7 @@ export default function AgentDashboardPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">累计分佣</p>
-                <p className="text-2xl font-bold">¥{totalEarnings}</p>
+                <p className="text-2xl font-bold">¥{stats?.totalEarnings?.toFixed(2) || "0.00"}</p>
               </div>
               <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center">
                 <DollarSign className="h-5 w-5 text-green-600" />
@@ -81,13 +198,13 @@ export default function AgentDashboardPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">今日新增</p>
-                <p className="text-2xl font-bold">¥{MOCK_AGENTS.reduce((sum, a) => sum + a.todayEarnings, 0)}</p>
+                <p className="text-2xl font-bold">¥{stats?.todayEarnings?.toFixed(2) || "0.00"}</p>
               </div>
               <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center">
                 <TrendingUp className="h-5 w-5 text-purple-600" />
               </div>
             </div>
-            <p className="text-xs text-green-600 mt-2">+12% 较昨日</p>
+            <p className="text-xs text-green-600 mt-2">今日分佣收益</p>
           </CardContent>
         </Card>
         <Card>
@@ -95,13 +212,15 @@ export default function AgentDashboardPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">待结算</p>
-                <p className="text-2xl font-bold">¥{pendingSettlement}</p>
+                <p className="text-2xl font-bold">¥{stats?.pendingSettlement?.toFixed(2) || "0.00"}</p>
               </div>
               <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center">
                 <Clock className="h-5 w-5 text-amber-600" />
               </div>
             </div>
-            <p className="text-xs text-amber-600 mt-2">今晚统一结算</p>
+            <p className="text-xs text-amber-600 mt-2">
+              {stats?.pendingSettlement > 0 ? "可立即结算" : "暂无待结算"}
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -116,12 +235,27 @@ export default function AgentDashboardPage() {
             </div>
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2 bg-white border rounded-lg px-4 py-2">
-                <span className="font-mono font-bold text-primary">{inviteCode}</span>
-                <Button variant="ghost" size="sm" onClick={copyInviteCode} className="h-8 w-8 p-0">
-                  {copied ? <CheckCircle className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                <span className="font-mono font-bold text-primary">{stats?.inviteCode || "加载中..."}</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={copyInviteCode}
+                  className="h-8 w-8 p-0"
+                  disabled={!stats?.inviteCode}
+                >
+                  {copied ? (
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
                 </Button>
               </div>
-              <Button variant="outline" size="sm" className="gap-1" onClick={() => setShowQRCode(true)}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1"
+                onClick={() => setShowQRCode(true)}
+              >
                 <QrCode className="h-4 w-4" /> 二维码
               </Button>
             </div>
@@ -141,6 +275,9 @@ export default function AgentDashboardPage() {
                   max={50}
                 />
                 <span className="text-sm">%</span>
+                <Button size="sm" onClick={saveCommissionRate} disabled={savingRate}>
+                  {savingRate ? "保存中..." : "保存"}
+                </Button>
               </div>
               <span className="text-xs text-muted-foreground">代理每成交一单，你获得的分成比例</span>
             </div>
@@ -156,9 +293,12 @@ export default function AgentDashboardPage() {
           </DialogHeader>
           <div className="flex flex-col items-center gap-4 py-4">
             <div className="w-48 h-48 bg-gray-100 rounded-xl flex items-center justify-center border-2 border-dashed">
-              <span className="text-muted-foreground text-sm">二维码生成中...</span>
+              <span className="text-muted-foreground text-sm text-center px-4">
+                访问网站注册时<br />输入邀请码<br />
+                <strong className="text-primary">{stats?.inviteCode}</strong>
+              </span>
             </div>
-            <p className="text-sm text-muted-foreground">扫码即可注册成为代理</p>
+            <p className="text-sm text-muted-foreground">或分享邀请码给好友</p>
           </div>
         </DialogContent>
       </Dialog>
@@ -174,43 +314,59 @@ export default function AgentDashboardPage() {
         <TabsContent value="agents">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">我的代理 ({totalAgents})</CardTitle>
+              <CardTitle className="text-lg">我的代理 ({agents.length})</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {MOCK_AGENTS.map((agent) => (
-                  <div key={agent.id} className="flex items-center justify-between p-4 border rounded-xl hover:bg-muted/50 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white font-bold">
-                        {agent.name[0]}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{agent.name}</span>
-                          <Badge variant={agent.status === "active" ? "success" : "secondary"} className="text-[10px]">
-                            {agent.status === "active" ? "活跃" : "待审核"}
-                          </Badge>
+              {agents.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Users className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                  <p>暂无下级代理</p>
+                  <p className="text-sm">分享邀请码开始推广吧！</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {agents.map((agent) => (
+                    <div
+                      key={agent.id}
+                      className="flex items-center justify-between p-4 border rounded-xl hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white font-bold">
+                          {agent.nickname?.[0] || "代"}
                         </div>
-                        <p className="text-xs text-muted-foreground">{agent.phone} · 加入于 {agent.joinDate}</p>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{agent.nickname || "代理"}</span>
+                            <Badge
+                              variant={agent.status === "active" ? "success" : "secondary"}
+                              className="text-[10px]"
+                            >
+                              {agent.status === "active" ? "活跃" : "待审核"}
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            {agent.phone} · 加入于 {agent.joinDate}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-6 text-sm">
+                        <div className="text-center">
+                          <p className="font-bold">{agent.totalCustomers || 0}</p>
+                          <p className="text-xs text-muted-foreground">获客数</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="font-bold text-green-600">¥{Number(agent.totalEarnings).toFixed(2)}</p>
+                          <p className="text-xs text-muted-foreground">累计收益</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="font-bold">¥{Number(agent.todayEarnings).toFixed(2)}</p>
+                          <p className="text-xs text-muted-foreground">今日</p>
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-6 text-sm">
-                      <div className="text-center">
-                        <p className="font-bold">{agent.customers}</p>
-                        <p className="text-xs text-muted-foreground">获客数</p>
-                      </div>
-                      <div className="text-center">
-                        <p className="font-bold text-green-600">¥{agent.totalEarnings}</p>
-                        <p className="text-xs text-muted-foreground">累计收益</p>
-                      </div>
-                      <div className="text-center">
-                        <p className="font-bold">¥{agent.todayEarnings}</p>
-                        <p className="text-xs text-muted-foreground">今日</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -220,33 +376,67 @@ export default function AgentDashboardPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">结算记录</CardTitle>
-                <Button size="sm" className="gap-1">
-                  <DollarSign className="h-4 w-4" /> 一键结算
+                <Button
+                  size="sm"
+                  className="gap-1"
+                  onClick={handleSettle}
+                  disabled={settling || (stats?.pendingSettlement || 0) <= 0}
+                >
+                  {settling ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" /> 结算中...
+                    </>
+                  ) : (
+                    <>
+                      <DollarSign className="h-4 w-4" /> 一键结算
+                    </>
+                  )}
                 </Button>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {MOCK_SETTLEMENTS.map((s) => (
-                  <div key={s.id} className="flex items-center justify-between p-4 border rounded-xl">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${s.status === "settled" ? "bg-green-50" : "bg-amber-50"}`}>
-                        {s.status === "settled" ? <CheckCircle className="h-5 w-5 text-green-600" /> : <Clock className="h-5 w-5 text-amber-600" />}
+              {settlements.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <DollarSign className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                  <p>暂无结算记录</p>
+                  <p className="text-sm">下级代理产生收益后会自动生成结算记录</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {settlements.map((s) => (
+                    <div key={s.id} className="flex items-center justify-between p-4 border rounded-xl">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                            s.status === "settled" ? "bg-green-50" : "bg-amber-50"
+                          }`}
+                        >
+                          {s.status === "settled" ? (
+                            <CheckCircle className="h-5 w-5 text-green-600" />
+                          ) : (
+                            <Clock className="h-5 w-5 text-amber-600" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-medium">
+                            {s.payment_method || "微信"} 提现
+                          </p>
+                          <p className="text-xs text-muted-foreground">{s.created_at?.split("T")[0]}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium">{s.agentName}</p>
-                        <p className="text-xs text-muted-foreground">{s.date}</p>
+                      <div className="flex items-center gap-4">
+                        <span className="font-bold">¥{Number(s.amount).toFixed(2)}</span>
+                        <Badge
+                          variant={s.status === "settled" ? "success" : "warning"}
+                          className="text-[10px]"
+                        >
+                          {s.status === "settled" ? "已结算" : "待结算"}
+                        </Badge>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4">
-                      <span className="font-bold">¥{s.amount}</span>
-                      <Badge variant={s.status === "settled" ? "success" : "warning"} className="text-[10px]">
-                        {s.status === "settled" ? "已结算" : "待结算"}
-                      </Badge>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -273,7 +463,9 @@ export default function AgentDashboardPage() {
                   </div>
                   <div>
                     <h4 className="font-medium">收益计算</h4>
-                    <p className="text-sm text-muted-foreground">代理成交后，按设定比例自动计算你的分佣收益</p>
+                    <p className="text-sm text-muted-foreground">
+                      代理成交后，按设定比例自动计算你的分佣收益（当前比例：{commissionRate}%）
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3 p-4 bg-purple-50 rounded-xl">

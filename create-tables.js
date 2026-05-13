@@ -138,6 +138,9 @@ async function createTables() {
 
   if (response.ok) {
     console.log('✅ ai_chat_logs 和 payment_submissions 表创建成功！')
+    console.log('⚠️  请继续在 Supabase SQL Editor 执行 agents 相关表的 SQL（见下方）')
+    console.log('')
+    printManualSQL()
   } else {
     const text = await response.text()
     console.log('⚠️  REST API 执行 SQL 失败（Supabase 免费版可能不支持 RPC）')
@@ -208,6 +211,108 @@ CREATE POLICY "Admins can do everything with payments"
   USING (
     EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
   );
+
+-- =============================================
+-- 3. agents（代理表）
+-- =============================================
+CREATE TABLE IF NOT EXISTS agents (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  parent_user_id UUID REFERENCES auth.users(id),
+  invite_code TEXT UNIQUE NOT NULL,
+  commission_rate INT DEFAULT 30 CHECK (commission_rate >= 10 AND commission_rate <= 50),
+  status TEXT DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'pending')),
+  total_earnings NUMERIC(10,2) DEFAULT 0,
+  pending_earnings NUMERIC(10,2) DEFAULT 0,
+  total_customers INT DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+ALTER TABLE agents ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can read own agent record"
+  ON agents FOR SELECT
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own agent record"
+  ON agents FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own agent record"
+  ON agents FOR UPDATE
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Parents can read child agents"
+  ON agents FOR SELECT
+  USING (auth.uid() = parent_user_id);
+
+-- =============================================
+-- 4. agent_commissions（分佣记录）
+-- =============================================
+CREATE TABLE IF NOT EXISTS agent_commissions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  agent_id UUID REFERENCES agents(id) ON DELETE CASCADE,
+  parent_user_id UUID REFERENCES auth.users(id),
+  customer_user_id UUID REFERENCES auth.users(id),
+  subscription_id UUID REFERENCES subscriptions(id),
+  plan TEXT NOT NULL,
+  amount INT NOT NULL,
+  commission_rate INT NOT NULL,
+  commission_amount NUMERIC(10,2) NOT NULL,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'settled', 'cancelled')),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  settled_at TIMESTAMPTZ
+);
+ALTER TABLE agent_commissions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Agents can read own commissions"
+  ON agent_commissions FOR SELECT
+  USING (
+    EXISTS (SELECT 1 FROM agents WHERE id = agent_id AND user_id = auth.uid())
+    OR EXISTS (SELECT 1 FROM agents WHERE id = agent_id AND parent_user_id = auth.uid())
+  );
+
+CREATE POLICY "Parents can read child commissions"
+  ON agent_commissions FOR SELECT
+  USING (auth.uid() = parent_user_id);
+
+-- =============================================
+-- 5. settlements（结算记录）
+-- =============================================
+CREATE TABLE IF NOT EXISTS settlements (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  agent_id UUID REFERENCES agents(id),
+  amount NUMERIC(10,2) NOT NULL,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'settled', 'failed')),
+  payment_method TEXT,
+  payment_account TEXT,
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  settled_at TIMESTAMPTZ
+);
+ALTER TABLE settlements ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can read own settlements"
+  ON settlements FOR SELECT
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can create own settlements"
+  ON settlements FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own settlements"
+  ON settlements FOR UPDATE
+  USING (auth.uid() = user_id);
+
+-- =============================================
+-- 初始化：给已有用户创建代理记录
+-- =============================================
+INSERT INTO agents (user_id, invite_code, status)
+SELECT id, 'VIP' || substr(id::text, 1, 8), 'active'
+FROM auth.users
+WHERE id NOT IN (SELECT user_id FROM agents)
+ON CONFLICT DO NOTHING;
 `
   console.log(sql)
 }
