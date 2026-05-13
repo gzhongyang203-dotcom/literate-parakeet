@@ -1,12 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Progress } from "@/components/ui/progress"
-import { Target, Users, TrendingUp, DollarSign, ArrowRight, CheckCircle, Clock, BookOpen, Video, MessageCircle, Award } from "lucide-react"
+import { Target, Users, DollarSign, CheckCircle, Clock, Award } from "lucide-react"
 
 // 对标账号数据接口
 interface BenchmarkAccount {
