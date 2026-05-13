@@ -221,7 +221,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Quick links */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Link href="/projects">
           <Card className="hover:border-primary/50 transition-all cursor-pointer">
             <CardHeader>
@@ -239,6 +239,19 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">找队友一起干项目</p>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/dashboard/agent">
+          <Card className="hover:border-primary/50 transition-all cursor-pointer border-amber-200 bg-gradient-to-br from-amber-50/50 to-orange-50/30">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <CardTitle className="text-lg">代理中心</CardTitle>
+                <Badge variant="secondary" className="text-[10px] bg-amber-100 text-amber-700">NEW</Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">发展下级代理，统一结算分佣</p>
             </CardContent>
           </Card>
         </Link>

@@ -270,14 +270,24 @@ export default async function HomePage() {
                         </span>
                       </div>
                       <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Star className="h-3 w-3" /> {project.likes || 0}
+                        <span className="flex items-center gap-1 hover:text-red-500 transition-colors cursor-pointer group">
+                          <svg className="h-3.5 w-3.5 group-hover:fill-red-500 group-hover:text-red-500 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                          </svg>
+                          <span className="tabular-nums">{project.likes || 0}</span>
                         </span>
-                        <span className="flex items-center gap-1">
-                          💬 {project.comments || 0}
+                        <span className="flex items-center gap-1 hover:text-blue-500 transition-colors cursor-pointer group">
+                          <svg className="h-3.5 w-3.5 group-hover:text-blue-500 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                          </svg>
+                          <span className="tabular-nums">{project.comments || 0}</span>
                         </span>
                         <span className="flex items-center gap-1 text-muted-foreground/60">
-                          👁 {project.views || "—"}
+                          <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                            <circle cx="12" cy="12" r="3" />
+                          </svg>
+                          <span className="tabular-nums">{project.views || "—"}</span>
                         </span>
                       </div>
                     </div>

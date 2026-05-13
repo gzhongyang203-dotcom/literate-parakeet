@@ -15,6 +15,7 @@ import { ToolChecklist } from "@/components/project/tool-checklist"
 import { ExecutionChecklist } from "@/components/project/execution-checklist"
 import { DetailedSteps } from "@/components/detailed-steps"
 import { ProjectReviews } from "@/components/project-reviews"
+import { ProjectDetailEnhanced } from "@/components/project/project-detail-enhanced"
 import { WechatQRCodeCard } from "@/components/wechat-qrcode"
 
 // 项目评分数据
@@ -163,8 +164,18 @@ export default async function ProjectDetailPage({
                 {new Date(project.created_at).toLocaleDateString("zh-CN")}
               </div>
               <span className="font-medium text-primary">{project.income_estimate}</span>
-              <span>❤️ {likeCount || 0}</span>
-              <span>💬 {commentCount || 0}</span>
+              <span className="flex items-center gap-1 hover:text-red-500 transition-colors cursor-pointer">
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                </svg>
+                {likeCount || 0}
+              </span>
+              <span className="flex items-center gap-1 hover:text-blue-500 transition-colors cursor-pointer">
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                </svg>
+                {commentCount || 0}
+              </span>
               <span>👤 {authorNickname}</span>
             </div>
 
@@ -296,6 +307,11 @@ export default async function ProjectDetailPage({
                 {/* 学员评价 */}
                 <div className="mb-10 border rounded-xl p-6 bg-white">
                   <ProjectReviews />
+                </div>
+
+                {/* 增强版项目详情 - 对标账号/人群画像/变现路径 */}
+                <div className="mb-10">
+                  <ProjectDetailEnhanced />
                 </div>
 
                 {/* Execution Checklist */}
