@@ -87,7 +87,7 @@ export async function GET(request: Request) {
       // 获取每个代理的今日收益
       const today = new Date().toISOString().split("T")[0]
       const agentsWithTodayEarnings = await Promise.all(
-        (childAgents || []).map(async (agent) => {
+        (childAgents || []).map(async (agent: { id: string; profile?: string; user_id: string; created_at?: string }) => {
           const { data: todayComm } = await supabase
             .from("agent_commissions")
             .select("commission_amount")
@@ -99,7 +99,7 @@ export async function GET(request: Request) {
             ...agent,
             nickname: agent.profile || "代理",
             phone: agent.user_id.slice(0, 8) + "****" + agent.user_id.slice(-4),
-            todayEarnings: todayComm?.reduce((sum, c) => sum + Number(c.commission_amount), 0) || 0,
+            todayEarnings: todayComm?.reduce((sum: number, c: { commission_amount: unknown }) => sum + Number(c.commission_amount), 0) || 0,
             joinDate: agent.created_at?.split("T")[0],
           }
         })
