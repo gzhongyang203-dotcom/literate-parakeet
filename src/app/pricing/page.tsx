@@ -1,6 +1,6 @@
 "use client"
 
-import { Check, Zap, Sparkles, Crown, Loader2, AlertTriangle, TrendingUp, Clock, Users, ShoppingCart, Timer, Fire } from "lucide-react"
+import { Check, Zap, Sparkles, Crown, Loader2, AlertTriangle, TrendingUp, Clock, Users, ShoppingCart, Timer, Flame } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
@@ -191,7 +191,7 @@ function PricingContent() {
         <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Fire className="h-5 w-5 text-orange-500" />
+              <Flame className="h-5 w-5 text-orange-500" />
               <span className="font-bold text-orange-600">🔥 今日疯抢中</span>
             </div>
             <span className="text-xs text-green-600/70">今日已有 28 人订阅</span>
