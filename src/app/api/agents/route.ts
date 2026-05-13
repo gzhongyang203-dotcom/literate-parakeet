@@ -35,7 +35,7 @@ export async function GET(request: Request) {
         .eq("parent_user_id", user.id)
         .eq("status", "settled")
 
-      const totalEarnings = commissions?.reduce((sum, c) => sum + Number(c.commission_amount), 0) || 0
+      const totalEarnings = commissions?.reduce((sum: number, c: { commission_amount: unknown }) => sum + Number(c.commission_amount), 0) || 0
 
       // 获取待结算
       const { data: pendingCommissions } = await supabase
@@ -44,7 +44,7 @@ export async function GET(request: Request) {
         .eq("parent_user_id", user.id)
         .eq("status", "pending")
 
-      const pendingSettlement = pendingCommissions?.reduce((sum, c) => sum + Number(c.commission_amount), 0) || 0
+      const pendingSettlement = pendingCommissions?.reduce((sum: number, c: { commission_amount: unknown }) => sum + Number(c.commission_amount), 0) || 0
 
       // 获取今日新增
       const today = new Date().toISOString().split("T")[0]
@@ -54,7 +54,7 @@ export async function GET(request: Request) {
         .eq("parent_user_id", user.id)
         .gte("created_at", today)
 
-      const todayEarnings = todayCommissions?.reduce((sum, c) => sum + Number(c.commission_amount), 0) || 0
+      const todayEarnings = todayCommissions?.reduce((sum: number, c: { commission_amount: unknown }) => sum + Number(c.commission_amount), 0) || 0
 
       return NextResponse.json({
         inviteCode: myAgent?.invite_code || `VIP${user.id.slice(0, 8)}`,
