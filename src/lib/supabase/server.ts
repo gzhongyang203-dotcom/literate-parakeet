@@ -31,6 +31,17 @@ export async function createClient() {
           }
         },
       },
+      // 全局 fetch 超时: 5秒（Server Component 场景）
+      global: {
+        fetch: (url, options) => {
+          const controller = new AbortController()
+          const timeoutId = setTimeout(() => controller.abort(), 5000)
+          return fetch(url, {
+            ...options,
+            signal: controller.signal,
+          }).finally(() => clearTimeout(timeoutId))
+        },
+      },
     }
   )
 }
