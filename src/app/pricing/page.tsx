@@ -200,19 +200,19 @@ function PricingContent() {
             {TODAY_ORDERS.map((order, index) => (
               <div
                 key={index}
-                className={`flex items-center justify-between text-sm ${
+                className={`flex items-center justify-between text-sm gap-2 ${
                   index === 0 ? "text-green-700 font-medium" : "text-green-600/80"
                 }`}
               >
-                <div className="flex items-center gap-2">
-                  <span className="text-green-400">✓</span>
-                  <span>{order.name}</span>
+                <div className="flex items-center gap-1 flex-wrap min-w-0">
+                  <span className="text-green-400 flex-shrink-0">✓</span>
+                  <span className="truncate">{order.name}</span>
+                  <span className="text-green-400/60 hidden sm:inline">·</span>
+                  <span className="hidden sm:inline">{order.location}</span>
                   <span className="text-green-400/60">·</span>
-                  <span>{order.location}</span>
-                  <span className="text-green-400/60">·</span>
-                  <span>订阅了 {order.plan}</span>
+                  <span className="truncate">订阅了 {order.plan}</span>
                 </div>
-                <span className="text-xs text-green-400/60">{order.time}</span>
+                <span className="text-xs text-green-400/60 flex-shrink-0">{order.time}</span>
               </div>
             ))}
           </div>
@@ -221,7 +221,7 @@ function PricingContent() {
 
       {/* 统计数据 */}
       <div className="max-w-3xl mx-auto mb-12">
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {STATS.map((stat, i) => (
             <div key={i} className="text-center p-4 bg-muted/50 rounded-xl">
               <stat.icon className={`h-5 w-5 mx-auto mb-2 ${stat.color}`} />

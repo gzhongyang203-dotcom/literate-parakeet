@@ -339,10 +339,10 @@ export default function AgentDashboardPage() {
                   {agents.map((agent) => (
                     <div
                       key={agent.id}
-                      className="flex items-center justify-between p-4 border rounded-xl hover:bg-muted/50 transition-colors"
+                      className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-xl hover:bg-muted/50 transition-colors gap-3"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white font-bold">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white font-bold flex-shrink-0">
                           {agent.nickname?.[0] || "代"}
                         </div>
                         <div>
@@ -360,7 +360,7 @@ export default function AgentDashboardPage() {
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-6 text-sm">
+                      <div className="flex items-center gap-4 text-sm sm:gap-6 pl-13 sm:pl-0">
                         <div className="text-center">
                           <p className="font-bold">{agent.totalCustomers || 0}</p>
                           <p className="text-xs text-muted-foreground">获客数</p>

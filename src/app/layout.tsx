@@ -1,4 +1,4 @@
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import "./globals.css"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
@@ -33,6 +33,14 @@ export const metadata: Metadata = {
   icons: {
     icon: "/favicon.svg",
   },
+}
+
+// 手机端自适应 - 必须单独导出
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: "#ffffff",
 }
 
 export default function RootLayout({
