@@ -218,7 +218,7 @@ export default function AiAssistantPage() {
   const isPartner = subscription?.plan === "合伙人"
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)]">
+    <div className="flex flex-col h-[calc(100vh-4rem)] max-h-[calc(100vh-4rem)]">
       {/* 顶部信息栏 */}
       <div className="border-b bg-background px-4 py-3 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">

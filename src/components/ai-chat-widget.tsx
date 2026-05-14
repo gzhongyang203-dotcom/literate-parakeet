@@ -21,11 +21,11 @@ export function AiChatWidget() {
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/30 hover:shadow-xl hover:shadow-green-500/40 hover:scale-105 transition-all flex items-center justify-center group"
+          className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/30 hover:shadow-xl hover:shadow-green-500/40 hover:scale-105 transition-all flex items-center justify-center group active:scale-95"
         >
-          <MessageCircle className="h-6 w-6" />
+          <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6" />
           <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-white animate-pulse-dot" />
-          <span className="absolute top-full mt-2 right-0 bg-white text-xs text-foreground px-2 py-1 rounded-lg shadow-sm border opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+          <span className="absolute top-full mt-2 right-0 bg-white text-xs text-foreground px-2 py-1 rounded-lg shadow-sm border opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap hidden sm:block">
             添加客服微信
           </span>
         </button>
@@ -33,7 +33,7 @@ export function AiChatWidget() {
 
       {/* 客服窗口 */}
       {open && (
-        <div className="fixed bottom-6 right-6 z-50 w-[360px] bg-white rounded-2xl shadow-2xl border flex flex-col overflow-hidden animate-fade-up">
+        <div className="fixed bottom-6 right-3 sm:right-6 z-50 w-[calc(100vw-24px)] sm:w-[360px] max-w-[360px] bg-white rounded-2xl shadow-2xl border flex flex-col overflow-hidden animate-fade-up">
           {/* Header */}
           <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-5 py-4 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3">

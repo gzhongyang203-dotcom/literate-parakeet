@@ -99,7 +99,7 @@ export function WechatQRCodeFloating() {
       {/* 悬浮按钮 */}
       <button
         onClick={() => setShow(true)}
-        className="fixed bottom-6 right-6 z-40 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all p-4 group"
+        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 bg-green-500 hover:bg-green-600 active:scale-95 text-white rounded-full shadow-lg hover:shadow-xl transition-all p-3 sm:p-4 group"
         title="咨询客服"
       >
         <svg
@@ -121,11 +121,11 @@ export function WechatQRCodeFloating() {
       {/* 弹窗 */}
       {show && (
         <div
-          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-3 sm:p-4"
           onClick={() => setShow(false)}
         >
           <div
-            className="bg-white rounded-2xl p-6 max-w-sm w-full"
+            className="bg-white rounded-2xl p-4 sm:p-6 max-w-[calc(100vw-24px)] sm:max-w-sm w-full"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-4">
