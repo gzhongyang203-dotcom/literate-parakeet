@@ -61,7 +61,6 @@ CREATE TABLE IF NOT EXISTS subscriptions (
   user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
   plan TEXT NOT NULL,
   status TEXT DEFAULT 'active'::TEXT CHECK (status IN ('active', 'canceled', 'expired')),
-  lemon_squeezy_id TEXT,
   start_date TIMESTAMPTZ DEFAULT NOW(),
   end_date TIMESTAMPTZ
 );
@@ -286,6 +285,152 @@ CREATE POLICY "Admins can view bot_messages" ON bot_messages
   FOR SELECT USING (
     EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.role = 'admin')
   );
+
+-- =============================================
+-- 10. 代理表 (agents)
+-- 存储代理用户信息、邀请码、分佣比例
+-- =============================================
+CREATE TABLE IF NOT EXISTS agents (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE UNIQUE NOT NULL,
+  parent_user_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
+  invite_code TEXT UNIQUE NOT NULL,
+  commission_rate INTEGER DEFAULT 30 CHECK (commission_rate >= 10 AND commission_rate <= 50),
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'active', 'suspended')),
+  total_earnings DECIMAL(12, 2) DEFAULT 0,
+  pending_earnings DECIMAL(12, 2) DEFAULT 0,
+  total_customers INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 11. 代理佣金表 (agent_commissions)
+-- 记录每笔分佣明细
+-- =============================================
+CREATE TABLE IF NOT EXISTS agent_commissions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  parent_user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  agent_id UUID REFERENCES agents(id) ON DELETE CASCADE,
+  order_type TEXT DEFAULT 'subscription',
+  order_amount DECIMAL(12, 2) DEFAULT 0,
+  commission_amount DECIMAL(12, 2) DEFAULT 0,
+  commission_rate INTEGER DEFAULT 30,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'settled', 'cancelled')),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  settled_at TIMESTAMPTZ
+);
+
+-- 12. 结算记录表 (settlements)
+-- 代理提现/结算记录
+-- =============================================
+CREATE TABLE IF NOT EXISTS settlements (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  agent_id UUID REFERENCES agents(id) ON DELETE SET NULL,
+  amount DECIMAL(12, 2) NOT NULL,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'settled', 'rejected')),
+  payment_method TEXT DEFAULT '微信',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- =============================================
+-- 代理表 RLS 策略
+-- =============================================
+ALTER TABLE agents ENABLE ROW LEVEL SECURITY;
+ALTER TABLE agent_commissions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE settlements ENABLE ROW LEVEL SECURITY;
+
+-- agents: 用户可查看自己的代理记录
+DROP POLICY IF EXISTS "Users can view own agent record" ON agents;
+CREATE POLICY "Users can view own agent record" ON agents
+  FOR SELECT USING (auth.uid() = user_id);
+
+-- agents: 上级代理可查看下级代理
+DROP POLICY IF EXISTS "Parent agents can view child agents" ON agents;
+CREATE POLICY "Parent agents can view child agents" ON agents
+  FOR SELECT USING (auth.uid() = parent_user_id);
+
+-- agents: 管理员可查看全部
+DROP POLICY IF EXISTS "Admins can manage all agents" ON agents;
+CREATE POLICY "Admins can manage all agents" ON agents
+  FOR ALL USING (
+    EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.role = 'admin')
+  );
+
+-- agent_commissions: 用户可查看自己的佣金记录
+DROP POLICY IF EXISTS "Users can view own commissions" ON agent_commissions;
+CREATE POLICY "Users can view own commissions" ON agent_commissions
+  FOR SELECT USING (auth.uid() = parent_user_id);
+
+-- agent_commissions: 管理员可查看全部
+DROP POLICY IF EXISTS "Admins can manage all commissions" ON agent_commissions;
+CREATE POLICY "Admins can manage all commissions" ON agent_commissions
+  FOR ALL USING (
+    EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.role = 'admin')
+  );
+
+-- settlements: 用户可查看自己的结算记录
+DROP POLICY IF EXISTS "Users can view own settlements" ON settlements;
+CREATE POLICY "Users can view own settlements" ON settlements
+  FOR SELECT USING (auth.uid() = user_id);
+
+-- settlements: 管理员可管理全部结算
+DROP POLICY IF EXISTS "Admins can manage all settlements" ON settlements;
+CREATE POLICY "Admins can manage all settlements" ON settlements
+  FOR ALL USING (
+    EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.role = 'admin')
+  );
+
+-- =============================================
+-- 代理相关索引
+-- =============================================
+CREATE INDEX IF NOT EXISTS idx_agents_user ON agents(user_id);
+CREATE INDEX IF NOT EXISTS idx_agents_parent ON agents(parent_user_id);
+CREATE INDEX IF NOT EXISTS idx_agents_invite_code ON agents(invite_code);
+CREATE INDEX IF NOT EXISTS idx_agent_commissions_parent ON agent_commissions(parent_user_id);
+CREATE INDEX IF NOT EXISTS idx_agent_commissions_agent ON agent_commissions(agent_id);
+CREATE INDEX IF NOT EXISTS idx_agent_commissions_status ON agent_commissions(status);
+CREATE INDEX IF NOT EXISTS idx_settlements_user ON settlements(user_id);
+CREATE INDEX IF NOT EXISTS idx_settlements_status ON settlements(status);
+
+-- =============================================
+-- 自动触发器：新用户注册后自动创建代理记录
+-- =============================================
+CREATE OR REPLACE FUNCTION public.handle_new_user_agent()
+RETURNS TRIGGER AS $$
+DECLARE
+  v_invite_code TEXT;
+  v_parent_id UUID;
+BEGIN
+  -- 从 auth.users 读取邀请码
+  SELECT raw_user_meta_data->>'invite_code' INTO v_invite_code
+  FROM auth.users
+  WHERE id = NEW.id;
+  
+  -- 如果携带邀请码，查找上级代理
+  IF v_invite_code IS NOT NULL AND v_invite_code != '' THEN
+    SELECT user_id INTO v_parent_id
+    FROM public.agents
+    WHERE invite_code = v_invite_code;
+  END IF;
+  
+  INSERT INTO public.agents (user_id, parent_user_id, invite_code, commission_rate, status)
+  VALUES (
+    NEW.id,
+    v_parent_id,
+    'VIP' || REPLACE(NEW.id::TEXT, '-', '')::TEXT,
+    30,
+    'active'
+  );
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS on_profile_created_agent ON profiles;
+CREATE TRIGGER on_profile_created_agent
+  AFTER INSERT ON profiles
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user_agent();
 
 -- =============================================
 -- 完成提示

@@ -52,7 +52,6 @@ export type Subscription = {
   user_id: string
   plan: string
   status: "active" | "canceled" | "expired"
-  lemon_squeezy_id: string | null
   start_date: string
   end_date: string
 }
@@ -85,6 +84,50 @@ export type AnnouncementComment = {
   created_at: string
   user_nickname?: string
   user_avatar?: string
+}
+
+// 代理相关类型
+export type Agent = {
+  id: string
+  user_id: string
+  parent_user_id: string | null
+  invite_code: string
+  commission_rate: number
+  status: "pending" | "active" | "suspended"
+  total_earnings: number
+  pending_earnings: number
+  total_customers: number
+  created_at: string
+  updated_at: string
+  // Joined fields
+  nickname?: string
+  todayEarnings?: number
+  phone?: string
+  joinDate?: string
+}
+
+export type AgentCommission = {
+  id: string
+  parent_user_id: string
+  agent_id: string | null
+  order_type: string
+  order_amount: number
+  commission_amount: number
+  commission_rate: number
+  status: "pending" | "settled" | "cancelled"
+  created_at: string
+  settled_at: string | null
+}
+
+export type Settlement = {
+  id: string
+  user_id: string
+  agent_id: string | null
+  amount: number
+  status: "pending" | "settled" | "rejected"
+  payment_method: string
+  created_at: string
+  updated_at: string
 }
 
 export type Database = {
@@ -129,6 +172,21 @@ export type Database = {
         Row: AnnouncementComment
         Insert: Omit<AnnouncementComment, "id" | "created_at">
         Update: Partial<Omit<AnnouncementComment, "id">>
+      }
+      agents: {
+        Row: Agent
+        Insert: Omit<Agent, "id" | "created_at" | "updated_at">
+        Update: Partial<Omit<Agent, "id">>
+      }
+      agent_commissions: {
+        Row: AgentCommission
+        Insert: Omit<AgentCommission, "id" | "created_at">
+        Update: Partial<Omit<AgentCommission, "id">>
+      }
+      settlements: {
+        Row: Settlement
+        Insert: Omit<Settlement, "id" | "created_at" | "updated_at">
+        Update: Partial<Omit<Settlement, "id">>
       }
     }
   }

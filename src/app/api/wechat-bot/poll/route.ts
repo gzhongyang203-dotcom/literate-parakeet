@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
+import { getAdminClient } from "@/lib/supabase/admin"
 import {
-  iLinkPost,
   ILINK_BASE,
   getUpdates,
   sendTextMessage,
   extractTextFromMessage,
-  sleep,
 } from "@/lib/ilink"
 
 // 调用 DeepSeek AI
@@ -46,8 +45,7 @@ async function getAIReply(userMessage: string, fromUserName: string): Promise<st
     })
     const data = await res.json()
     return data.choices?.[0]?.message?.content || "抱歉，暂时无法回复，请稍后再试。"
-  } catch (err) {
-    console.error("[AI Reply] error:", err)
+  } catch {
     return "AI 服务暂时不可用，请稍后再试。"
   }
 }
@@ -55,8 +53,12 @@ async function getAIReply(userMessage: string, fromUserName: string): Promise<st
 // POST /api/wechat-bot/poll
 // 由 Vercel Cron 或手动触发，单次执行一次消息拉取
 export async function POST() {
+  let pollingLocked = false
+
   try {
     const supabase = await createClient()
+    const adminSupabase = getAdminClient()
+    const writer = adminSupabase || supabase
 
     // 1. 读取 bot 配置
     const { data: cfg } = await supabase
@@ -72,24 +74,43 @@ export async function POST() {
       return NextResponse.json({ error: `bot 状态: ${cfg.bot_status}` }, { status: 400 })
     }
 
+    // 1.5 防重叠锁：检查 polling_locked_until，如在将来则跳过
+    if (cfg.polling_locked_until) {
+      const lockUntil = new Date(cfg.polling_locked_until).getTime()
+      if (Date.now() < lockUntil) {
+        return NextResponse.json({ processed: 0, reason: "still_polling" })
+      }
+    }
+
+    // 设置锁：锁定 110 秒（cron 间隔 2 分钟，留 10 秒缓冲）
+    const { error: lockSetError } = await writer
+      .from("bot_config")
+      .update({ polling_locked_until: new Date(Date.now() + 110_000).toISOString() })
+      .eq("id", 1)
+    if (lockSetError) {
+      // 字段可能不存在（需执行 supabase/migrations/bot_config_fix.sql），降级继续
+      console.warn("[WeChat Bot Poll] 设置轮询锁失败:", lockSetError.message)
+    } else {
+      pollingLocked = true
+    }
+
     const baseUrl = cfg.base_url || ILINK_BASE
     const cursor = cfg.last_poll_cursor || ""
 
-    // 2. 长轮询拉取消息（最长等 35s，函数超时设为 40s）
+    // 2. 长轮询拉取消息
     const data = await getUpdates(cfg.bot_token, baseUrl, cursor)
 
     // 3. 更新 cursor
     if (data.get_updates_buf) {
-      await supabase
+      await writer
         .from("bot_config")
         .update({ last_poll_cursor: data.get_updates_buf, updated_at: new Date().toISOString() })
         .eq("id", 1)
     }
 
     // 4. 处理消息
-    const replies: any[] = []
+    const replies: { from: string; text: string; reply: string }[] = []
     for (const msg of data.msgs || []) {
-      // 跳过 bot 自己发的消息
       if (msg.message_type === 2) continue
 
       const text = extractTextFromMessage(msg)
@@ -101,14 +122,14 @@ export async function POST() {
 
       console.log(`[WeChat Bot] 收到消息 from ${fromUserName}: ${text}`)
 
-      // 5. 调用 AI 回复
+      // 5. AI 回复
       const replyText = await getAIReply(text, fromUserName)
 
       // 6. 发送回复
       await sendTextMessage(cfg.bot_token, baseUrl, fromUserId, contextToken, replyText)
 
       // 7. 记录日志
-      await supabase.from("bot_messages").insert({
+      await writer.from("bot_messages").insert({
         from_user_id: fromUserId,
         from_user_name: fromUserName,
         message_text: text,
@@ -122,17 +143,30 @@ export async function POST() {
       processed: replies.length,
       replies,
     })
-  } catch (err: any) {
-    // 超时（AbortError）不算错误，是正常的长轮询返回
-    if (err.name === "AbortError") {
+  } catch (err: unknown) {
+    // Edge Runtime 中 DOMException 可能不存在，用 name 属性判断
+    if (err instanceof Error && err.name === "AbortError") {
       return NextResponse.json({ processed: 0, reason: "long_poll_timeout" })
     }
-    console.error("[WeChat Bot Poll] error:", err)
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error("[WeChat Bot Poll] error:", msg)
+    return NextResponse.json({ error: "轮询异常" }, { status: 500 })
+  } finally {
+    // 释放轮询锁
+    if (pollingLocked) {
+      try {
+        const supabase = await createClient()
+        const adminSupabase = getAdminClient()
+        const writer = adminSupabase || supabase
+        await writer
+          .from("bot_config")
+          .update({ polling_locked_until: null })
+          .eq("id", 1)
+      } catch { /* 释放锁失败不影响主流程 */ }
+    }
   }
 }
 
-// GET /api/wechat-bot/poll - 也支持 GET（供 Cron 调用）
 export async function GET() {
   return POST()
 }

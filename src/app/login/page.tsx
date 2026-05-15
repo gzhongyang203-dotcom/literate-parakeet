@@ -13,6 +13,7 @@ function LoginForm() {
   const searchParams = useSearchParams()
   const initialTab = searchParams.get("tab") === "register" ? "register" : "login"
   const redirect = searchParams.get("redirect") || "/"
+  const inviteCode = searchParams.get("code") || ""
 
   const [tab, setTab] = useState<"login" | "register">(initialTab)
   const [email, setEmail] = useState("")
@@ -59,7 +60,10 @@ function LoginForm() {
         email,
         password,
         options: {
-          data: { nickname: email.split("@")[0] },
+          data: {
+            nickname: email.split("@")[0],
+            invite_code: inviteCode,
+          },
         },
       })
       if (err) throw err

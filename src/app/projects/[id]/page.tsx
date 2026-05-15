@@ -14,7 +14,8 @@ import { ProjectScoreboard } from "@/components/project/scoreboard"
 import { ToolChecklist } from "@/components/project/tool-checklist"
 import { ExecutionChecklist } from "@/components/project/execution-checklist"
 import { DetailedSteps } from "@/components/detailed-steps"
-import { ProjectReviews } from "@/components/project-reviews"
+import { LikeButton } from "@/components/project/like-button"
+import { CommentSection } from "@/components/project/comment-section"
 import { ProjectDetailEnhanced } from "@/components/project/project-detail-enhanced"
 import { WechatQRCodeCard } from "@/components/wechat-qrcode"
 
@@ -164,18 +165,13 @@ export default async function ProjectDetailPage({
                 {new Date(project.created_at).toLocaleDateString("zh-CN")}
               </div>
               <span className="font-medium text-primary">{project.income_estimate}</span>
-              <span className="flex items-center gap-1 hover:text-red-500 transition-colors cursor-pointer">
-                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                </svg>
-                {likeCount || 0}
-              </span>
-              <span className="flex items-center gap-1 hover:text-blue-500 transition-colors cursor-pointer">
+              <LikeButton projectId={id} initialCount={likeCount || 0} />
+              <a href="#comments-section" className="flex items-center gap-1 hover:text-blue-500 transition-colors cursor-pointer">
                 <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                 </svg>
                 {commentCount || 0}
-              </span>
+              </a>
               <span>👤 {authorNickname}</span>
             </div>
 
@@ -191,7 +187,7 @@ export default async function ProjectDetailPage({
                 </div>
                 <span className="text-xs text-green-600/70">今日已帮助 28 人开始行动</span>
               </div>
-              <div className="grid grid-cols-4 gap-3 text-center">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
                 <div>
                   <p className="text-lg font-bold text-green-600">328</p>
                   <p className="text-xs text-green-600/70">正在学习</p>
@@ -212,7 +208,7 @@ export default async function ProjectDetailPage({
             </div>
 
             {/* Quick stats row */}
-            <div className="grid grid-cols-3 gap-3 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
               <div className="flex items-center gap-2 p-3 rounded-lg bg-green-50 border border-green-100">
                 <Wallet className="h-4 w-4 text-green-600" />
                 <div>
@@ -304,9 +300,9 @@ export default async function ProjectDetailPage({
                   <DetailedSteps />
                 </div>
 
-                {/* 学员评价 */}
-                <div className="mb-10 border rounded-xl p-6 bg-white">
-                  <ProjectReviews />
+                {/* 项目评论 */}
+                <div id="comments-section" className="mb-10 border rounded-xl p-6 bg-white">
+                  <CommentSection projectId={id} initialCount={commentCount || 0} />
                 </div>
 
                 {/* 增强版项目详情 - 对标账号/人群画像/变现路径 */}

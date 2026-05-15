@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
+import { getAdminClient } from "@/lib/supabase/admin"
 import { checkQRCodeStatus } from "@/lib/ilink"
 
 // 查询 bot 登录状态（供前端轮询）
@@ -20,6 +21,8 @@ export async function GET() {
       return NextResponse.json({ error: "无权限" }, { status: 403 })
     }
 
+    const adminSupabase = getAdminClient()
+
     // 1. 读取当前状态
     const { data: cfg } = await supabase
       .from("bot_config")
@@ -31,11 +34,11 @@ export async function GET() {
     if (cfg?.bot_status === "scanning" && cfg?.qrcode_key) {
       try {
         const ilinkStatus = await checkQRCodeStatus(cfg.qrcode_key)
-        console.log("[iLink Status] ", JSON.stringify(ilinkStatus))
 
         if (ilinkStatus.status === "confirmed") {
-          // 扫码成功！保存 bot_token 和 base_url
-          await supabase
+          // 扫码成功！保存 bot_token
+          const writer = adminSupabase || supabase
+          await writer
             .from("bot_config")
             .update({
               bot_token: ilinkStatus.bot_token,
@@ -55,8 +58,8 @@ export async function GET() {
         }
 
         if (ilinkStatus.status === "expired") {
-          // 二维码过期，更新状态
-          await supabase
+          const writer = adminSupabase || supabase
+          await writer
             .from("bot_config")
             .update({
               bot_status: "offline",
@@ -69,40 +72,31 @@ export async function GET() {
           return NextResponse.json({
             status: "expired",
             has_token: false,
-            error: "二维码已过期，请重新获取",
+            message: "二维码已过期，请重新获取",
           })
         }
-
-        // 其他状态（wait/scanned）继续等待
-      } catch (pollErr: any) {
-        console.error("[iLink Poll] error:", pollErr.message)
-        // 轮询失败不影响返回当前状态
+      } catch (pollErr: unknown) {
+        const msg = pollErr instanceof Error ? pollErr.message : String(pollErr)
+        console.error("[iLink Poll] error:", msg)
       }
     }
 
-    // 3. 返回当前数据库状态（包含二维码URL）
-    const { data: updatedCfg, error: fetchError } = await supabase
+    // 3. 返回当前数据库状态
+    const { data: updatedCfg } = await supabase
       .from("bot_config")
       .select("bot_status, qrcode_url")
       .eq("id", 1)
       .single()
-    
-    console.log("[Status API] 数据库查询结果:", { updatedCfg, fetchError })
 
     return NextResponse.json({
       status: updatedCfg?.bot_status || cfg?.bot_status || "offline",
       has_token: !!cfg?.bot_token,
       base_url: cfg?.base_url || null,
       qrcode_url: updatedCfg?.qrcode_url || cfg?.qrcode_url || null,
-      debug: {
-        cfg_status: cfg?.bot_status,
-        updatedCfg_status: updatedCfg?.bot_status,
-        cfg_qrcode: cfg?.qrcode_url ? "exists" : null,
-        updatedCfg_qrcode: updatedCfg?.qrcode_url ? "exists" : null,
-      }
     })
-  } catch (err: any) {
-    console.error("[Bot Status] error:", err)
-    return NextResponse.json({ error: err.message }, { status: 500 })
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error("[Bot Status] error:", msg)
+    return NextResponse.json({ error: "查询状态失败" }, { status: 500 })
   }
 }

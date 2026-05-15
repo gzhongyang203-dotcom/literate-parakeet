@@ -73,41 +73,6 @@ export default function AdminSettingsPage() {
           </CardContent>
         </Card>
 
-        {/* Lemon Squeezy 配置说明 */}
-        <Card className="border-purple-200 bg-purple-50/30">
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <CreditCard className="h-4 w-4 text-purple-600" />
-              支付升级（可选）
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="bg-white rounded-xl border p-4">
-              <div className="font-bold text-sm mb-2">Lemon Squeezy 自动支付</div>
-              <div className="text-xs text-muted-foreground mb-3">
-                注册 Lemon Squeezy 后，可实现用户自助订阅、自动扣费。<br />
-                <strong className="text-amber-600">注意：仅支持信用卡支付，不支持微信/支付宝</strong>
-              </div>
-
-              <div className="bg-muted rounded-lg p-3 mb-3">
-                <div className="text-xs text-muted-foreground mb-2">注册地址：</div>
-                <div className="font-mono text-xs break-all">https://www.lemonsqueezy.com</div>
-              </div>
-
-              <div className="space-y-2 text-xs">
-                <div className="font-medium">配置步骤：</div>
-                <ol className="text-muted-foreground space-y-1 ml-2">
-                  <li>1. 注册 Lemon Squeezy 账号</li>
-                  <li>2. 创建两个订阅产品：创业者(¥29)、合伙人(¥89)</li>
-                  <li>3. 获取 Store ID、API Key、Webhook Secret</li>
-                  <li>4. 在 Vercel 环境变量中配置</li>
-                  <li>5. 重新部署即可自动生效</li>
-                </ol>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* 网站信息 */}
         <Card>
           <CardHeader>

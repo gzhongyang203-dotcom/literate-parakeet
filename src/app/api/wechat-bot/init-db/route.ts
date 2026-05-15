@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/admin"
 
 // 初始化 bot_config 表（如果不存在）
 export async function GET() {
@@ -19,6 +20,10 @@ export async function GET() {
       return NextResponse.json({ error: "无权限" }, { status: 403 })
     }
 
+    // admin client 用于写入（绕过 RLS）
+    let adminSupabase
+    try { adminSupabase = createAdminClient() } catch { adminSupabase = supabase }
+
     // 检查表是否存在
     const { data: existing, error: checkError } = await supabase
       .from("bot_config")
@@ -34,7 +39,7 @@ export async function GET() {
     }
 
     // 创建初始记录
-    const { data: inserted, error: insertError } = await supabase
+    const { data: inserted, error: insertError } = await adminSupabase
       .from("bot_config")
       .insert({
         id: 1,
@@ -49,12 +54,8 @@ export async function GET() {
       .single()
 
     if (insertError) {
-      return NextResponse.json({ 
-        error: "创建记录失败", 
-        detail: insertError.message,
-        code: insertError.code,
-        hint: "可能是表不存在或RLS策略阻止写入"
-      }, { status: 500 })
+      console.error("[Init DB] insert error:", insertError)
+      return NextResponse.json({ error: "创建记录失败" }, { status: 500 })
     }
 
     return NextResponse.json({ 
@@ -64,9 +65,6 @@ export async function GET() {
 
   } catch (err: any) {
     console.error("[Init DB] error:", err)
-    return NextResponse.json({ 
-      error: err.message,
-      stack: err.stack
-    }, { status: 500 })
+    return NextResponse.json({ error: "服务器错误" }, { status: 500 })
   }
 }

@@ -1,26 +1,17 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
-import { getBotQRCode, checkQRCodeStatus } from "@/lib/ilink"
+import { getAdminClient } from "@/lib/supabase/admin"
+import { getBotQRCode } from "@/lib/ilink"
 
 // 获取 iLink 登录二维码
 export async function GET() {
   try {
-    console.log("[QR API] 开始处理请求")
-    
     const supabase = await createClient()
-    console.log("[QR API] Supabase client 创建成功")
 
     // 鉴权：仅管理员
     const { data: { user }, error: authError } = await supabase.auth.getUser()
-    console.log("[QR API] 鉴权结果:", { user: user?.id, error: authError?.message })
-    
     if (authError || !user) {
-      console.error("[QR API] 鉴权失败:", authError)
-      return NextResponse.json({ 
-        error: "未登录", 
-        detail: authError?.message,
-        hint: "请确认已登录管理员账号"
-      }, { status: 401 })
+      return NextResponse.json({ error: "未登录" }, { status: 401 })
     }
 
     const { data: profile, error: profileError } = await supabase
@@ -28,17 +19,17 @@ export async function GET() {
       .select("role")
       .eq("id", user.id)
       .single()
-    
-    console.log("[QR API] 角色查询结果:", { profile, profileError })
-    
+
     if (profileError || profile?.role !== "admin") {
-      console.error("[QR API] 权限验证失败:", profileError)
-      return NextResponse.json({ 
-        error: "无权限", 
-        detail: profileError?.message,
-        code: profileError?.code,
-        hint: "请确认用户角色是否为admin，或profiles表是否存在"
-      }, { status: 403 })
+      return NextResponse.json({ error: "无权限" }, { status: 403 })
+    }
+
+    // 判断 admin client 是否可用
+    const adminSupabase = getAdminClient()
+    if (!adminSupabase) {
+      return NextResponse.json({
+        error: "SUPABASE_SERVICE_ROLE_KEY 未配置，请检查 Vercel 环境变量",
+      }, { status: 500 })
     }
 
     // 1. 获取二维码
@@ -46,68 +37,44 @@ export async function GET() {
     console.log("[iLink QR] response:", JSON.stringify(qrData).slice(0, 200))
 
     if (!qrData.qrcode_img_content) {
-      console.error("[iLink QR] 获取二维码失败")
-      console.error("[iLink QR] status:", qrData.status)
-      console.error("[iLink QR] msg:", qrData.msg)
-      console.error("[iLink QR] 完整响应 (前500字符):", JSON.stringify(qrData).slice(0, 500))
-      
-      return NextResponse.json({ 
-        error: "获取二维码失败", 
-        ilink_status: qrData.status,
-        ilink_msg: qrData.msg,
-        hint: "请检查 iLink API 是否返回了 qrcode_img_content 字段"
-      }, { status: 500 })
+      return NextResponse.json({ error: "获取二维码失败，iLink API 返回异常" }, { status: 500 })
     }
 
-    // qrcode_img_content 是二维码图片的 URL（不是 base64！）
-    const qrcodeUrl = qrData.qrcode_img_content  // 直接使用 URL
+    const qrcodeUrl = qrData.qrcode_img_content
     const qrcodeKey = qrData.qrcode || qrData.qrcode_key
-    
-    console.log("[QR API] 二维码 URL:", qrcodeUrl)
-    console.log("[QR API] 二维码 key:", qrcodeKey)
 
-    // 2. 存入数据库（scanning 状态）
-    console.log("[QR API] 准备写入数据库:", { 
-      qrcodeKey: qrcodeKey?.slice(0, 20), 
-      qrcodeUrlLength: qrcodeUrl?.length 
-    })
-    
-    const { error: dbError } = await supabase.from("bot_config").upsert({
+    // 2. 写入数据库（admin client 绕过 RLS）
+    const { error: dbError } = await adminSupabase.from("bot_config").upsert({
       id: 1,
       qrcode_key: qrcodeKey,
       qrcode_url: qrcodeUrl,
       bot_status: "scanning",
       updated_at: new Date().toISOString(),
     })
-    
+
     if (dbError) {
-      console.error("[QR API] 数据库写入失败!")
-      console.error("[QR API] 错误代码:", dbError.code)
-      console.error("[QR API] 错误消息:", dbError.message)
-      console.error("[QR API] 错误详情:", dbError.details)
-      console.error("[QR API] 错误 hint:", dbError.hint)
-      
-      return NextResponse.json({ 
-        error: "数据库写入失败", 
-        code: dbError.code,
-        message: dbError.message,
-        details: dbError.details,
-        hint: dbError.hint
-      }, { status: 500 })
+      console.error("[QR API] 数据库写入失败:", dbError.message, dbError.code)
+
+      // 表不存在时返回明确提示
+      if (dbError.code === "42P01") {
+        return NextResponse.json({
+          error: "bot_config 表不存在，请在 Supabase SQL Editor 中执行 supabase/migrations/bot_config_fix.sql",
+        }, { status: 500 })
+      }
+
+      return NextResponse.json({ error: "数据库写入失败: " + dbError.message }, { status: 500 })
     }
-    
-    console.log("[QR API] 数据库写入成功:", { qrcodeKey, qrcodeUrl: qrcodeUrl.slice(0, 50) })
+
+    console.log("[QR API] 数据库写入成功")
 
     return NextResponse.json({
       qrcode_url: qrcodeUrl,
       qrcode_key: qrcodeKey,
-      status: "scanning"
+      status: "scanning",
     })
-  } catch (err: any) {
-    console.error("[iLink QR] error:", err)
-    return NextResponse.json({ 
-      error: err.message,
-      stack: process.env.NODE_ENV === "development" ? err.stack : undefined
-    }, { status: 500 })
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.error("[iLink QR] error:", message)
+    return NextResponse.json({ error: "服务器错误" }, { status: 500 })
   }
 }

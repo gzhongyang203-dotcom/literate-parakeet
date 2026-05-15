@@ -11,11 +11,8 @@ export async function GET() {
     console.log("[TEST QR] iLink 完整响应:", JSON.stringify(qrData).slice(0, 1000))
     
     if (!qrData.qrcode_img_content) {
-      return NextResponse.json({ 
-        error: "iLink API 未返回二维码",
-        ilink_response: qrData,
-        hint: "请检查 iLink API 是否正常，或 bot_type=3 是否正确"
-      }, { status: 500 })
+      console.error("[TEST QR] iLink 未返回二维码，完整响应:", JSON.stringify(qrData).slice(0, 500))
+      return NextResponse.json({ error: "iLink API 未返回二维码" }, { status: 500 })
     }
     
     // iLink 返回的是 URL（不是 base64），直接使用
@@ -32,10 +29,6 @@ export async function GET() {
     
   } catch (err: any) {
     console.error("[TEST QR] 错误:", err)
-    return NextResponse.json({ 
-      error: err.message,
-      stack: err.stack,
-      hint: "iLink API 调用失败，请检查网络或API地址"
-    }, { status: 500 })
+    return NextResponse.json({ error: "iLink API 调用失败" }, { status: 500 })
   }
 }

@@ -14,7 +14,6 @@ interface SubscriptionWithProfile {
   user_id: string
   plan: string
   status: string
-  lemon_squeezy_id: string | null
   start_date: string
   end_date: string | null
   profile: {

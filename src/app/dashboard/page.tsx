@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { createClient } from "@/lib/supabase/client"
 import type { User } from "@supabase/supabase-js"
-import { User as UserIcon, FileText, Users, LogOut, Loader2, CreditCard, Crown, Zap } from "lucide-react"
+import { User as UserIcon, FileText, Users, LogOut, Loader2, CreditCard, Crown, Zap, Clock, CheckCircle2, XCircle } from "lucide-react"
 import Link from "next/link"
 
 interface Profile {
@@ -29,6 +29,9 @@ export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [subscription, setSubscription] = useState<Subscription | null>(null)
+  const [pendingSubmissions, setPendingSubmissions] = useState<Array<{
+    id: string; plan: string; amount: number; status: string; created_at: string; notes: string | null;
+  }>>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -64,6 +67,19 @@ export default function DashboardPage() {
 
       if (subData) {
         setSubscription(subData)
+      }
+
+      // 获取支付提交状态
+      if (!subData) {
+        try {
+          const res = await fetch("/api/payment-status")
+          if (res.ok) {
+            const data = await res.json()
+            setPendingSubmissions(data.submissions || [])
+          }
+        } catch (err) {
+          console.error("获取支付状态失败:", err)
+        }
       }
 
       setLoading(false)
@@ -182,6 +198,42 @@ export default function DashboardPage() {
                 <Button size="sm">升级订阅</Button>
               </Link>
             </div>
+            {/* 支付提交状态 */}
+            {pendingSubmissions.length > 0 && (
+              <div className="mt-4 pt-4 border-t">
+                <p className="text-sm font-medium mb-2">支付审核状态</p>
+                <div className="space-y-2">
+                  {pendingSubmissions.map((s) => (
+                    <div key={s.id} className="flex items-center justify-between bg-white rounded-lg p-3 border text-xs">
+                      <div>
+                        <span className="font-medium">{s.plan}</span>
+                        <span className="text-muted-foreground ml-2">¥{(s.amount / 100).toFixed(0)}</span>
+                        <span className="text-muted-foreground ml-2">
+                          {new Date(s.created_at).toLocaleDateString("zh-CN")}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {s.status === "pending" && (
+                          <Badge className="bg-amber-100 text-amber-700 gap-1 text-[10px]">
+                            <Clock className="h-3 w-3" /> 审核中
+                          </Badge>
+                        )}
+                        {s.status === "approved" && (
+                          <Badge className="bg-green-100 text-green-700 gap-1 text-[10px]">
+                            <CheckCircle2 className="h-3 w-3" /> 已通过
+                          </Badge>
+                        )}
+                        {s.status === "rejected" && (
+                          <Badge className="bg-red-100 text-red-700 gap-1 text-[10px]">
+                            <XCircle className="h-3 w-3" /> 已拒绝
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}

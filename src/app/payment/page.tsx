@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
-import { Check, Loader2, Upload, AlertCircle, Copy, CheckCircle2 } from "lucide-react"
+import { Check, Loader2, Upload, AlertCircle, Copy, CheckCircle2, Clock, XCircle, History } from "lucide-react"
 
 const PLAN_INFO = {
   "创业者": {
@@ -39,8 +39,20 @@ function PaymentContent() {
   const planKey = searchParams.get("plan") || "创业者"
   const info = PLAN_INFO[planKey as keyof typeof PLAN_INFO] || PLAN_INFO["创业者"]
 
+  interface PaymentSubmission {
+    id: string
+    plan: string
+    amount: number
+    order_no: string
+    status: string
+    notes: string | null
+    created_at: string
+    approved_at: string | null
+  }
+
   const [user, setUser] = useState<any>(null)
   const [subscription, setSubscription] = useState<any>(null)
+  const [submissions, setSubmissions] = useState<PaymentSubmission[]>([])
   const [loading, setLoading] = useState(false)
   const [orderNo, setOrderNo] = useState("")
   const [screenshot, setScreenshot] = useState<File | null>(null)
@@ -62,10 +74,25 @@ function PaymentContent() {
           .eq("status", "active")
           .single()
         setSubscription(sub)
+
+        // 获取支付提交记录
+        fetchPaymentStatus()
       }
     }
     checkAuth()
   }, [])
+
+  const fetchPaymentStatus = async () => {
+    try {
+      const res = await fetch("/api/payment-status")
+      if (res.ok) {
+        const data = await res.json()
+        setSubmissions(data.submissions || [])
+      }
+    } catch (err) {
+      console.error("获取支付状态失败:", err)
+    }
+  }
 
   const handleScreenshot = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -117,6 +144,8 @@ function PaymentContent() {
       })
 
       if (error) throw error
+      // 刷新提交记录
+      await fetchPaymentStatus()
       setSubmitted(true)
     } catch (err) {
       console.error(err)
@@ -173,6 +202,19 @@ function PaymentContent() {
     )
   }
 
+  // Status badge helper
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "approved":
+        return <Badge className="bg-green-100 text-green-700 gap-1"><CheckCircle2 className="h-3 w-3" /> 已通过</Badge>
+      case "rejected":
+        return <Badge className="bg-red-100 text-red-700 gap-1"><XCircle className="h-3 w-3" /> 已拒绝</Badge>
+      case "pending":
+      default:
+        return <Badge className="bg-amber-100 text-amber-700 gap-1"><Clock className="h-3 w-3" /> 审核中</Badge>
+    }
+  }
+
   return (
     <div className="container mx-auto px-4 py-12 max-w-lg">
       {/* Plan Badge */}
@@ -180,6 +222,45 @@ function PaymentContent() {
         <Badge className={info.badge}>订阅 {planKey} 套餐</Badge>
         <h1 className="text-2xl font-bold mt-4">支付 ¥{info.price}</h1>
       </div>
+
+      {/* 提交记录 - 只在有记录时显示 */}
+      {submissions.length > 0 && (
+        <Card className="mb-8 border-blue-200 bg-blue-50/30">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <History className="h-4 w-4 text-blue-600" />
+              <span className="text-sm font-semibold text-blue-900">我的提交记录</span>
+              <button
+                onClick={fetchPaymentStatus}
+                className="ml-auto text-xs text-blue-600 hover:text-blue-800 underline"
+              >
+                刷新
+              </button>
+            </div>
+            <div className="space-y-2">
+              {submissions.map((s) => (
+                <div key={s.id} className="flex items-center justify-between bg-white rounded-lg p-3 border text-sm">
+                  <div>
+                    <span className="font-medium">{s.plan}</span>
+                    <span className="text-muted-foreground ml-2">¥{(s.amount / 100).toFixed(0)}</span>
+                    <span className="text-xs text-muted-foreground ml-2">
+                      {new Date(s.created_at).toLocaleDateString("zh-CN")}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {getStatusBadge(s.status)}
+                    {s.status === "rejected" && s.notes && (
+                      <span className="text-xs text-red-600 max-w-[120px] truncate" title={s.notes}>
+                        {s.notes}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Steps */}
       <div className="space-y-4 mb-8">

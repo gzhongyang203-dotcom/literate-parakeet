@@ -45,7 +45,6 @@ export async function POST(request: NextRequest) {
         user_id: payment.user_id,
         plan: payment.plan,
         status: "active",
-        lemon_squeezy_id: `manual_${payment.id}`,
         start_date: new Date().toISOString(),
         end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       }, {

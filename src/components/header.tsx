@@ -19,6 +19,7 @@ import {
   Megaphone,
   MessageCircle,
   Flame,
+  Share2,
 } from "lucide-react"
 
 interface NavItem {
@@ -31,6 +32,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: "公告", href: "/announcements" },
   { label: "项目库", href: "/projects" },
+  { label: "代理中心", href: "/agent", icon: Share2 },
   { label: "AI助手", href: "/ai-assistant" },
   { 
     label: "微信Bot", 
@@ -207,6 +209,13 @@ export function Header() {
                     <UserIcon className="h-4 w-4" /> 个人中心
                   </Link>
                   <Link
+                    href="/dashboard/agent"
+                    className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-muted"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    <Share2 className="h-4 w-4" /> 代理中心
+                  </Link>
+                  <Link
                     href="/pricing"
                     className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-muted"
                     onClick={() => setDropdownOpen(false)}
@@ -251,6 +260,8 @@ export function Header() {
         <button
           className="md:hidden p-2"
           onClick={() => setMobileOpen(!mobileOpen)}
+          aria-label={mobileOpen ? "关闭菜单" : "打开菜单"}
+          aria-expanded={mobileOpen}
         >
           <svg
             className="h-6 w-6"
@@ -269,7 +280,7 @@ export function Header() {
 
       {/* Mobile Nav */}
       {mobileOpen && (
-        <div className="md:hidden border-t bg-background px-4 py-4 space-y-3">
+        <nav role="navigation" aria-label="移动端导航" className="md:hidden border-t bg-background px-4 py-4 space-y-3">
           {navItems.map((item) => (
             <Link
               key={item.href}
@@ -324,7 +335,7 @@ export function Header() {
               </>
             )}
           </div>
-        </div>
+        </nav>
       )}
     </header>
   )

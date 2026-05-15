@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { Suspense } from "react"
-import { ArrowRight, Sparkles, Users, BookOpen, TrendingUp, Star, Zap } from "lucide-react"
+import { ArrowRight, Sparkles, Users, BookOpen, TrendingUp, Star, Zap, Share2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -210,6 +210,47 @@ export default function HomePage() {
         <div className="container mx-auto px-4">
           <div className="max-w-2xl mx-auto">
             <SmartRecommendation />
+          </div>
+        </div>
+      </section>
+
+      {/* ========== 代理推广 ========== */}
+      <section className="py-16 bg-gradient-to-r from-purple-50 via-white to-pink-50">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto">
+            <Card className="border-primary/10 bg-white/80 backdrop-blur shadow-lg overflow-hidden">
+              <CardContent className="p-8 md:p-10">
+                <div className="flex flex-col md:flex-row items-center gap-8">
+                  <div className="flex-1 text-center md:text-left">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium mb-4">
+                      <TrendingUp className="h-3 w-3" />
+                      零成本创业机会
+                    </div>
+                    <h2 className="text-2xl md:text-3xl font-bold mb-3">
+                      分享即赚钱，<br />
+                      <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
+                        成为代理推广者
+                      </span>
+                    </h2>
+                    <p className="text-muted-foreground mb-6 text-sm">
+                      无需囤货、无需押金。分享专属链接，每成交一单获得
+                      <strong className="text-purple-600">10%-50%持续分佣</strong>。
+                      已有代理月入3000+
+                    </p>
+                    <Link href="/agent">
+                      <Button className="gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
+                        了解代理计划 <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </div>
+                  <div className="flex-shrink-0">
+                    <div className="w-24 h-24 md:w-32 md:h-32 rounded-2xl bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center shadow-lg">
+                      <Share2 className="h-12 w-12 md:h-16 md:w-16 text-white" />
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
