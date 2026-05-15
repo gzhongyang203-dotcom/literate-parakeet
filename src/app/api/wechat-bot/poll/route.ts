@@ -4,54 +4,12 @@ import { getAdminClient } from "@/lib/supabase/admin"
 import {
   ILINK_BASE,
   getUpdates,
-  sendTextMessage,
   extractTextFromMessage,
 } from "@/lib/ilink"
 
-// 调用 DeepSeek AI
-async function getAIReply(userMessage: string, fromUserName: string): Promise<string> {
-  const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || ""
-  if (!DEEPSEEK_API_KEY) return "AI 服务未配置，请联系管理员。"
-
-  const systemPrompt = `你是"创业导航"的微信 AI 助手。
-用户通过微信给你发消息咨询创业、副业、赚钱相关的问题。
-
-回答要求：
-- 直接说结论，接地气，不说废话
-- 给出可操作的建议和具体步骤
-- 优先推荐低成本、快变现的方向
-- 每次回复控制在 300 字以内（微信阅读体验）
-- 结尾可以引导用户访问网站：创业导航 duoling.com（示例）
-
-当前对话用户昵称：${fromUserName}`
-
-  try {
-    const res = await fetch("https://api.deepseek.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${DEEPSEEK_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "deepseek-chat",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userMessage },
-        ],
-        max_tokens: 800,
-        temperature: 0.7,
-        stream: false,
-      }),
-    })
-    const data = await res.json()
-    return data.choices?.[0]?.message?.content || "抱歉，暂时无法回复，请稍后再试。"
-  } catch {
-    return "AI 服务暂时不可用，请稍后再试。"
-  }
-}
-
 // POST /api/wechat-bot/poll
-// 由 Vercel Cron 或手动触发，单次执行一次消息拉取
+// 由 Vercel Cron 调用（每2分钟），只负责拉取消息并入库
+// AI 处理由 /api/wechat-bot/process 异步执行
 export async function POST() {
   let pollingLocked = false
 
@@ -74,77 +32,99 @@ export async function POST() {
       return NextResponse.json({ error: `bot 状态: ${cfg.bot_status}` }, { status: 400 })
     }
 
-    // 1.5 防重叠锁：检查 polling_locked_until，如在将来则跳过
-    if (cfg.polling_locked_until) {
-      const lockUntil = new Date(cfg.polling_locked_until).getTime()
-      if (Date.now() < lockUntil) {
-        return NextResponse.json({ processed: 0, reason: "still_polling" })
-      }
-    }
+    // 2. 原子防重叠锁
+    const lockUntil = new Date(Date.now() + 110_000).toISOString()
+    const nowISO = new Date().toISOString()
 
-    // 设置锁：锁定 110 秒（cron 间隔 2 分钟，留 10 秒缓冲）
-    const { error: lockSetError } = await writer
+    const { data: lockAcquired } = await writer
       .from("bot_config")
-      .update({ polling_locked_until: new Date(Date.now() + 110_000).toISOString() })
+      .update({ polling_locked_until: lockUntil })
       .eq("id", 1)
-    if (lockSetError) {
-      // 字段可能不存在（需执行 supabase/migrations/bot_config_fix.sql），降级继续
-      console.warn("[WeChat Bot Poll] 设置轮询锁失败:", lockSetError.message)
-    } else {
-      pollingLocked = true
+      .or(`polling_locked_until.is.null,polling_locked_until.lt.${nowISO}`)
+      .select("id")
+      .single()
+
+    if (!lockAcquired) {
+      return NextResponse.json({ processed: 0, reason: "still_polling" })
     }
+    pollingLocked = true
 
     const baseUrl = cfg.base_url || ILINK_BASE
     const cursor = cfg.last_poll_cursor || ""
 
-    // 2. 长轮询拉取消息
+    // 3. 长轮询拉取消息（8.5s timeout）
     const data = await getUpdates(cfg.bot_token, baseUrl, cursor)
 
-    // 3. 更新 cursor
-    if (data.get_updates_buf) {
-      await writer
-        .from("bot_config")
-        .update({ last_poll_cursor: data.get_updates_buf, updated_at: new Date().toISOString() })
-        .eq("id", 1)
-    }
+    // 4. 更新 cursor 和监控计数
+    const now = new Date().toISOString()
+    await writer
+      .from("bot_config")
+      .update({
+        last_poll_cursor: data.get_updates_buf || cursor,
+        last_poll_at: now,
+        poll_count: (cfg.poll_count || 0) + 1,
+        updated_at: now,
+      })
+      .eq("id", 1)
 
-    // 4. 处理消息
-    const replies: { from: string; text: string; reply: string }[] = []
+    // 5. 消息入库（仅存储，不处理）
+    let savedCount = 0
     for (const msg of data.msgs || []) {
-      if (msg.message_type === 2) continue
+      if (msg.message_type === 2) continue // 跳过自己发的
 
       const text = extractTextFromMessage(msg)
       if (!text) continue
 
       const fromUserId = msg.from_user_id
-      const contextToken = msg.context_token
       const fromUserName = msg.from_user_nickname || "用户"
+      const contextToken = msg.context_token || ""
 
-      console.log(`[WeChat Bot] 收到消息 from ${fromUserName}: ${text}`)
+      // 去重：30秒内相同用户+相同内容
+      const thirtySecAgo = new Date(Date.now() - 30_000).toISOString()
+      const { data: dupCheck } = await writer
+        .from("bot_messages")
+        .select("id")
+        .eq("from_user_id", fromUserId)
+        .eq("message_text", text)
+        .gte("created_at", thirtySecAgo)
+        .limit(1)
 
-      // 5. AI 回复
-      const replyText = await getAIReply(text, fromUserName)
+      if (dupCheck && dupCheck.length > 0) continue
 
-      // 6. 发送回复
-      await sendTextMessage(cfg.bot_token, baseUrl, fromUserId, contextToken, replyText)
-
-      // 7. 记录日志
-      await writer.from("bot_messages").insert({
+      const { error: insertErr } = await writer.from("bot_messages").insert({
         from_user_id: fromUserId,
         from_user_name: fromUserName,
         message_text: text,
-        reply_text: replyText,
+        context_token: contextToken,
+        status: "pending",
+        retry_count: 0,
       })
 
-      replies.push({ from: fromUserName, text, reply: replyText })
+      if (!insertErr) {
+        savedCount++
+        console.log(`[WeChat Bot Poll] 新消息入库 from ${fromUserName}: ${text.slice(0, 50)}`)
+      } else {
+        console.error(`[WeChat Bot Poll] 消息入库失败:`, insertErr)
+      }
+    }
+
+    // 6. 触发异步处理（fire-and-forget，不等待结果）
+    if (savedCount > 0) {
+      const origin = process.env.NEXT_PUBLIC_SITE_URL ||
+        (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
+        "http://localhost:3000"
+      const processUrl = `${origin}/api/wechat-bot/process`
+      // 不 await，让 process 在后台跑
+      fetch(processUrl, { method: "POST" }).catch((e) =>
+        console.error("[WeChat Bot Poll] 触发process失败:", e)
+      )
     }
 
     return NextResponse.json({
-      processed: replies.length,
-      replies,
+      processed: savedCount,
+      total: (data.msgs || []).length,
     })
   } catch (err: unknown) {
-    // Edge Runtime 中 DOMException 可能不存在，用 name 属性判断
     if (err instanceof Error && err.name === "AbortError") {
       return NextResponse.json({ processed: 0, reason: "long_poll_timeout" })
     }

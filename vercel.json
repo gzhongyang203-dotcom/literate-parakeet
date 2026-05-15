@@ -3,6 +3,10 @@
     {
       "path": "/api/wechat-bot/poll",
       "schedule": "*/2 * * * *"
+    },
+    {
+      "path": "/api/wechat-bot/process",
+      "schedule": "* * * * *"
     }
   ]
 }

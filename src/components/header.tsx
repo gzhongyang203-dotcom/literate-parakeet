@@ -20,6 +20,7 @@ import {
   MessageCircle,
   Flame,
   Share2,
+  FolderKanban,
 } from "lucide-react"
 
 interface NavItem {
@@ -214,6 +215,13 @@ export function Header() {
                     onClick={() => setDropdownOpen(false)}
                   >
                     <Share2 className="h-4 w-4" /> 代理中心
+                  </Link>
+                  <Link
+                    href="/dashboard/projects"
+                    className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-muted"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    <FolderKanban className="h-4 w-4" /> 我的项目
                   </Link>
                   <Link
                     href="/pricing"

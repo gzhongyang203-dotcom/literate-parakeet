@@ -32,6 +32,8 @@ export default function DashboardPage() {
   const [pendingSubmissions, setPendingSubmissions] = useState<Array<{
     id: string; plan: string; amount: number; status: string; created_at: string; notes: string | null;
   }>>([])
+  const [myProjectCount, setMyProjectCount] = useState(0)
+  const [publishedProjectCount, setPublishedProjectCount] = useState(0)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -80,6 +82,25 @@ export default function DashboardPage() {
         } catch (err) {
           console.error("获取支付状态失败:", err)
         }
+      }
+
+      // 获取项目统计
+      try {
+        const [myProjectsRes, pubCountRes] = await Promise.all([
+          fetch("/api/projects"),
+          supabase.from("projects").select("*", { count: "exact", head: true }).eq("status", "published")
+        ])
+
+        if (myProjectsRes.ok) {
+          const myData = await myProjectsRes.json()
+          setMyProjectCount(myData.projects?.length || 0)
+        }
+
+        if (!pubCountRes.error) {
+          setPublishedProjectCount(pubCountRes.count || 0)
+        }
+      } catch (err) {
+        console.error("获取项目统计失败:", err)
       }
 
       setLoading(false)
@@ -246,8 +267,8 @@ export default function DashboardPage() {
             <CardTitle className="text-sm font-medium">浏览的项目</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">-</p>
-            <p className="text-xs text-muted-foreground">开始浏览项目库吧</p>
+            <p className="text-2xl font-bold">{publishedProjectCount}</p>
+            <p className="text-xs text-muted-foreground">平台已发布项目</p>
           </CardContent>
         </Card>
         <Card>
@@ -266,7 +287,7 @@ export default function DashboardPage() {
             <CardTitle className="text-sm font-medium">我的项目</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">-</p>
+            <p className="text-2xl font-bold">{myProjectCount}</p>
             <p className="text-xs text-muted-foreground">发布自己的项目</p>
           </CardContent>
         </Card>

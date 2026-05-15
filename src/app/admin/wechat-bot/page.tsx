@@ -213,20 +213,20 @@ export default function WeChatBotAdminPage() {
               <p className="text-sm text-muted-foreground mb-3">请用微信扫描二维码登录 Bot</p>
               <div className="inline-block p-6 bg-gradient-to-br from-green-50 to-blue-50 rounded-xl border shadow-sm">
                 <div className="text-center space-y-3">
-                  <div className="w-16 h-16 rounded-full bg-green-500 flex items-center justify-center mx-auto">
-                    <QrCode className="h-8 w-8 text-white" />
-                  </div>
+                  <img
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(botStatus.qrcode_url)}`}
+                    alt="微信Bot登录二维码"
+                    className="w-48 h-48 mx-auto rounded-lg border"
+                  />
                   <div>
                     <p className="font-medium text-green-700">二维码已生成</p>
-                    <p className="text-xs text-muted-foreground mt-1">点击下方按钮，用微信扫码</p>
+                    <p className="text-xs text-muted-foreground mt-1">用微信扫描上方二维码即可登录</p>
                   </div>
                   <a href={botStatus.qrcode_url} target="_blank" rel="noopener noreferrer" className="inline-block">
-                    <Button className="bg-green-500 hover:bg-green-600 text-white">
-                      <QrCode className="h-4 w-4 mr-2" />
-                      点击这里用微信扫码
+                    <Button variant="outline" size="sm">
+                      在浏览器中打开二维码
                     </Button>
                   </a>
-                  <p className="text-xs text-muted-foreground">或复制链接到浏览器打开</p>
                 </div>
               </div>
             </div>

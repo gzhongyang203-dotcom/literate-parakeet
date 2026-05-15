@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
-import { createAdminClient } from "@/lib/supabase/admin"
+import { getAdminClient } from "@/lib/supabase/admin"
 
 // 初始化 bot_config 表（如果不存在）
 export async function GET() {
@@ -21,8 +21,8 @@ export async function GET() {
     }
 
     // admin client 用于写入（绕过 RLS）
-    let adminSupabase
-    try { adminSupabase = createAdminClient() } catch { adminSupabase = supabase }
+    const adminSupabase = getAdminClient()
+    const writer = adminSupabase || supabase
 
     // 检查表是否存在
     const { data: existing, error: checkError } = await supabase
@@ -39,7 +39,7 @@ export async function GET() {
     }
 
     // 创建初始记录
-    const { data: inserted, error: insertError } = await adminSupabase
+    const { data: inserted, error: insertError } = await writer
       .from("bot_config")
       .insert({
         id: 1,

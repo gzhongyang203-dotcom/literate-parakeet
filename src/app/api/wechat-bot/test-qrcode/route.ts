@@ -1,9 +1,25 @@
 import { NextResponse } from "next/server"
+import { createClient } from "@/lib/supabase/server"
 import { getBotQRCode } from "@/lib/ilink"
 
-// 测试接口：不需要鉴权，直接测试iLink API
+// 测试接口：仅管理员可用，测试iLink API连通性
 export async function GET() {
   try {
+    const supabase = await createClient()
+
+    // 鉴权：仅管理员
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: "未登录" }, { status: 401 })
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single()
+    if (profile?.role !== "admin") {
+      return NextResponse.json({ error: "无权限" }, { status: 403 })
+    }
+
     console.log("[TEST QR] 开始测试iLink API...")
     
     const qrData = await getBotQRCode()

@@ -37,11 +37,8 @@ CREATE POLICY "Admins can manage bot_config" ON bot_config
     EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.role = 'admin')
   );
 
--- 6. Service Role 全权限绕过（用于 API 路由）
--- supabase_admin / service_role 自动绕过 RLS，此策略为安全兜底
-CREATE POLICY "Service role bypass for bot_config" ON bot_config
-  FOR ALL USING (true)
-  WITH CHECK (true);
+-- 6. Service Role 自动绕过 RLS，无需额外策略
+-- 注意：service_role 连接天然绕过 RLS，不要用 USING (true) 创建全员策略！
 
 -- 7. 同样修复 bot_messages 表
 CREATE TABLE IF NOT EXISTS bot_messages (
@@ -62,6 +59,5 @@ CREATE POLICY "Admins can view bot_messages" ON bot_messages
     EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.role = 'admin')
   );
 
-CREATE POLICY "Service role bypass for bot_messages" ON bot_messages
-  FOR ALL USING (true)
-  WITH CHECK (true);
+-- bot_messages INSERT 由 service_role client 执行（自动绕过 RLS）
+-- 不需要额外全员策略
