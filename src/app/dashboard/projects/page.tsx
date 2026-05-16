@@ -248,6 +248,7 @@ export default function MyProjectsPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm("确定删除这个项目？此操作不可撤销！")) return
+    setDeletingId(id)
     try {
       const res = await fetch(`/api/projects?id=${id}`, { method: "DELETE" })
       if (res.ok) {

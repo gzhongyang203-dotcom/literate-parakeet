@@ -34,25 +34,25 @@ export function DialogContent({ children, className }: { children: React.ReactNo
   )
 }
 
-export function DialogHeader({ children }: { children: React.ReactNode }) {
+export function DialogHeader({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className="mb-4">
+    <div className={cn("mb-4", className)}>
       {children}
     </div>
   )
 }
 
-export function DialogTitle({ children }: { children: React.ReactNode }) {
+export function DialogTitle({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <h2 className="text-lg font-bold">
+    <h2 className={cn("text-lg font-bold", className)}>
       {children}
     </h2>
   )
 }
 
-export function DialogFooter({ children }: { children: React.ReactNode }) {
+export function DialogFooter({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className="flex justify-end gap-2 mt-4">
+    <div className={cn("flex justify-end gap-2 mt-4", className)}>
       {children}
     </div>
   )

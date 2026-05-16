@@ -87,7 +87,7 @@ export async function GET(request: Request) {
       // 获取每个代理的今日收益
       const today = new Date().toISOString().split("T")[0]
       const agentsWithTodayEarnings = await Promise.all(
-        (childAgents || []).map(async (agent: { id: string; profile?: string; user_id: string; created_at?: string }) => {
+        (childAgents || []).map(async (agent: { id: string; profile?: { nickname?: string } | string; user_id: string; created_at?: string }) => {
           const { data: todayComm } = await supabase
             .from("agent_commissions")
             .select("commission_amount")
@@ -95,9 +95,14 @@ export async function GET(request: Request) {
             .eq("agent_id", agent.id)
             .gte("created_at", today)
 
+          // profile 联表返回的是对象 { nickname: "xx" }，需要解包
+          const nickname = typeof agent.profile === "object" && agent.profile !== null
+            ? (agent.profile as { nickname?: string }).nickname || "代理"
+            : "代理"
+
           return {
             ...agent,
-            nickname: agent.profile || "代理",
+            nickname,
             phone: agent.user_id.slice(0, 8) + "****" + agent.user_id.slice(-4),
             todayEarnings: todayComm?.reduce((sum: number, c: { commission_amount: unknown }) => sum + Number(c.commission_amount), 0) || 0,
             joinDate: agent.created_at?.split("T")[0],
@@ -206,15 +211,23 @@ export async function POST(request: Request) {
         .update({ status: "settled", settled_at: now })
         .in("id", commissionIds)
 
-      // 更新代理的待结算金额
+      // 更新代理的累计收益（累加）+ 清空待结算
+      const { data: parentAgent } = await supabase
+        .from("agents")
+        .select("total_earnings")
+        .eq("user_id", user.id)
+        .single()
+
+      const currentTotal = Number(parentAgent?.total_earnings || 0)
+
       await supabase
         .from("agents")
         .update({
           pending_earnings: 0,
-          total_earnings: totalAmount,
+          total_earnings: currentTotal + totalAmount,
           updated_at: now,
         })
-        .eq("parent_user_id", user.id)
+        .eq("user_id", user.id)
 
       return NextResponse.json({ success: true, amount: totalAmount })
     }

@@ -14,6 +14,7 @@ interface ProjectInput {
   is_practitioner_recommended?: boolean
   recommend_reason?: string
   tools_required?: string[]
+  status?: string
 }
 
 // GET /api/projects - 获取我的项目列表
