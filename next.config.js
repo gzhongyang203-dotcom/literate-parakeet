@@ -58,14 +58,14 @@ const nextConfig = {
         // 安全响应头：全站应用
         source: "/(.*)",
         headers: [
-          { key: "X-Frame-Options", value: "DENY" },
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "X-XSS-Protection", value: "1; mode=block" },
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
           {
             key: "Content-Security-Policy",
-            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://qduisyqrzhhqwwrkzniw.supabase.co; font-src 'self' data:; connect-src 'self' https://qduisyqrzhhqwwrkzniw.supabase.co https://api.deepseek.com; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'",
+            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://res.wx.qq.com; style-src 'self' 'unsafe-inline' https://res.wx.qq.com; img-src 'self' data: blob: https://qduisyqrzhhqwwrkzniw.supabase.co https://res.wx.qq.com; font-src 'self' data: https://res.wx.qq.com; connect-src 'self' https://qduisyqrzhhqwwrkzniw.supabase.co https://api.deepseek.com; frame-src 'self' https://support.weixin.qq.com; object-src 'none'; base-uri 'self'; form-action 'self'",
           },
         ],
       },
