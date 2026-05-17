@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { Suspense } from "react"
-import { ArrowRight, Sparkles, Users, BookOpen, TrendingUp, Star, Zap, Share2 } from "lucide-react"
+import { ArrowRight, Sparkles, Users, BookOpen, TrendingUp, Star, Zap, Shield, Heart, Wallet } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -10,7 +10,6 @@ import { DailyUpdatePreview } from "@/components/daily-update"
 import { SmartRecommendation } from "@/components/smart-recommendation"
 import { VirtualStats, OrderScroll, HotTags } from "@/components/virtual-data"
 import { MiniReviews } from "@/components/project-reviews"
-import { WechatQRCodeFloating } from "@/components/wechat-qrcode"
 import { FeaturedProjectsSection } from "@/components/featured-projects"
 
 const categories = [
@@ -22,53 +21,73 @@ const categories = [
   { name: "电商", count: 6, icon: "🛒", color: "bg-green-50 text-green-600 border-green-200/50", hoverColor: "group-hover:bg-green-100" },
 ]
 
+const successStories = [
+  {
+    emoji: "💼",
+    quote: "白天是会计，晚上在闲鱼月入6000",
+    detail: "跟着平台的闲鱼AI代写方案，下班后每天花1小时，第三个月副业超过主业",
+    tag: "上班族 · 零基础",
+  },
+  {
+    emoji: "🔥",
+    quote: "裁员后靠小红书带货，现在比上班挣得多",
+    detail: "被裁员后跟着做了小红书AI壁纸号，现在全职做，月入稳定2万+",
+    tag: "转行成功 · 小红书",
+  },
+  {
+    emoji: "👩",
+    quote: "38岁宝妈，一台手机做起情感咨询",
+    detail: "之前在店里打工，现在用微信做情感咨询，时间自由还能带娃",
+    tag: "宝妈逆袭 · 情感赛道",
+  },
+]
+
 export default function HomePage() {
   return (
     <div>
-      {/* ========== Hero ========== */}
+      {/* ========== Hero - 情绪共鸣 ========== */}
       <section className="relative overflow-hidden py-20 md:py-28">
         <HeroBackground />
         <div className="container mx-auto relative px-4 z-10">
           <div className="max-w-3xl mx-auto text-center">
-            <div className="flex justify-center mb-6">
+            <div className="flex justify-center mb-4">
               <ActivityIndicator />
             </div>
 
-            <Badge variant="secondary" className="mb-5 px-4 py-1.5 text-sm gap-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-primary" />
-              持续更新的创业项目库
-            </Badge>
+            {/* 社会证明小字 */}
+            <p className="text-sm text-muted-foreground mb-5">
+              🔥 已有 <strong className="text-foreground">2,847 人</strong> 找到副业方向
+            </p>
 
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6 leading-tight">
-              找到了不起的
-              <span className="text-primary relative">
-                {" "}创业项目{" "}
-                <svg className="absolute -bottom-1 left-0 w-full h-3 text-primary/20" viewBox="0 0 100 12" preserveAspectRatio="none">
-                  <path d="M0 8 Q25 0 50 8 Q75 16 100 8" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/>
-                </svg>
-              </span>
+            <h1 className="heading-xl text-4xl md:text-5xl lg:text-6xl mb-6">
+              你不是不想努力，
               <br />
-              和一起干的人
+              只是缺一个
+              <span className="text-gradient-premium"> 能落地的副业</span>
             </h1>
 
-            <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
-              每一个项目都是可落地的。有步骤、有工具、有预期收入。
+            <p className="body-premium text-muted-foreground mb-10 max-w-2xl mx-auto">
+              每天30分钟，第2个月副业收入超过工资
               <br className="hidden md:block" />
-              不再是一个人瞎摸索，找到项目，找到队友，一起干。
+              不是鸡汤，是手把手带着做
             </p>
 
             <div className="flex items-center justify-center gap-4 flex-wrap">
               <Link href="/projects">
-                <Button size="lg" className="gap-2 shadow-lg shadow-primary/20">
-                  浏览项目库 <ArrowRight className="h-4 w-4" />
+                <Button size="lg" className="btn-rounded gap-2 shadow-lg shadow-primary/20 text-base px-8 py-6">
+                  看看别人在做什么 <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
-              <Link href="/login?tab=register">
-                <Button variant="outline" size="lg" className="gap-2">
-                  免费注册
+              <Link href="/pricing">
+                <Button variant="outline" size="lg" className="btn-rounded gap-2 text-base px-8 py-6">
+                  了解方案
                 </Button>
               </Link>
             </div>
+
+            <p className="text-xs text-muted-foreground mt-4">
+              前100名注册送《副业避坑手册》电子版
+            </p>
           </div>
         </div>
       </section>
@@ -85,6 +104,44 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ========== 为什么他们能 —— 成功故事 ========== */}
+      <section className="py-16 bg-gradient-to-b from-muted/20 to-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-10">
+            <Badge variant="secondary" className="mb-3 px-4 py-1.5 text-sm gap-1.5">
+              <Star className="h-3.5 w-3.5 text-amber-500" />
+              真实逆袭故事
+            </Badge>
+            <h2 className="heading-lg text-2xl md:text-3xl mb-2">为什么他们能，你不能？</h2>
+            <p className="text-muted-foreground text-sm">他们唯一的共同点：行动了</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {successStories.map((story, i) => (
+              <Card
+                key={i}
+                className={`border-0 card-premium animate-fade-up-delay-${i} overflow-hidden`}
+              >
+                <CardContent className="p-6">
+                  <div className="text-3xl mb-3">{story.emoji}</div>
+                  <p className="font-bold text-base mb-2 leading-relaxed">{story.quote}</p>
+                  <p className="text-sm text-muted-foreground mb-4 leading-relaxed">{story.detail}</p>
+                  <div className="flex items-center justify-between">
+                    <Badge variant="secondary" className="text-xs">{story.tag}</Badge>
+                    <Link
+                      href="/pricing"
+                      className="text-xs text-primary hover:underline font-medium flex items-center gap-1"
+                    >
+                      你也可以 <ArrowRight className="h-3 w-3" />
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ========== 每日更新预告 ========== */}
       <DailyUpdatePreview />
 
@@ -94,7 +151,7 @@ export default function HomePage() {
         <div className="container mx-auto relative px-4 z-10">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h2 className="text-2xl font-bold">按分类找项目</h2>
+              <h2 className="heading-lg text-2xl">按分类找项目</h2>
               <p className="text-sm text-muted-foreground mt-1">找到最适合你的创业方向</p>
             </div>
             <div className="gradient-accent-bar w-16" />
@@ -104,7 +161,7 @@ export default function HomePage() {
               <Link
                 key={cat.name}
                 href={`/projects?category=${cat.name}`}
-                className={`group flex flex-col items-center gap-2.5 p-6 rounded-xl border bg-white hover:shadow-md hover:border-primary/30 transition-all card-hover ${cat.color}`}
+                className={`group flex flex-col items-center gap-2.5 p-6 rounded-xl border bg-white card-premium ${cat.color}`}
               >
                 <span className="text-2xl">{cat.icon}</span>
                 <span className="font-medium text-sm">{cat.name}</span>
@@ -115,7 +172,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ========== 精选项目 (Suspense: 3秒超时，立即显示降级数据) ========== */}
+      {/* ========== 精选项目 (Suspense: 前3免费 + 第4模糊) ========== */}
       <Suspense fallback={
         <section className="pb-16">
           <div className="container mx-auto px-4">
@@ -146,7 +203,7 @@ export default function HomePage() {
         <SectionBackground />
         <div className="container mx-auto relative px-4 z-10">
           <div className="text-center mb-12">
-            <h2 className="text-2xl font-bold mb-2">为什么选择创业导航？</h2>
+            <h2 className="heading-lg text-2xl mb-2">为什么选择创业导航？</h2>
             <p className="text-muted-foreground">三个理由让你不再自己瞎折腾</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -155,7 +212,7 @@ export default function HomePage() {
               { icon: Sparkles, gradient: "from-pink-500 to-rose-500", bgLight: "bg-pink-50", title: "持续更新", desc: "持续上新项目，覆盖最新风口。订阅后第一时间获取新项目推送", stats: "每周更新 2-3 个项目" },
               { icon: Users, gradient: "from-blue-500 to-indigo-500", bgLight: "bg-blue-50", title: "找人一起干", desc: "看到好项目可以找人组队，也可以发布自己的项目招募队友", stats: "已有 50+ 协作匹配成功" },
             ].map((item, i) => (
-              <Card key={item.title} className={`text-center border-0 shadow-sm hover:shadow-md transition-all card-hover animate-fade-up-delay-${i}`}>
+              <Card key={item.title} className={`text-center border-0 card-premium animate-fade-up-delay-${i}`}>
                 <CardHeader>
                   <div className="flex justify-center mb-3">
                     <div className={`w-14 h-14 rounded-2xl ${item.bgLight} flex items-center justify-center bg-gradient-to-br ${item.gradient} bg-opacity-10`}>
@@ -193,13 +250,13 @@ export default function HomePage() {
                   </div>
                   <span className="text-sm font-medium">4.9 分 · 98.6% 好评率</span>
                 </div>
-                <p className="text-sm text-muted-foreground">"在这个平台找到了适合我的创业项目，跟着步骤做，第一个月就赚了 2000+"</p>
+                <p className="body-premium text-muted-foreground">"在这个平台找到了适合我的创业项目，跟着步骤做，第一个月就赚了 2000+"</p>
                 <p className="text-xs text-muted-foreground mt-1">—— 来自社区成员的真实反馈</p>
               </div>
             </div>
           </div>
           <div className="mt-8">
-            <h3 className="text-lg font-bold mb-4 text-center">🔥 最新学员评价</h3>
+            <h3 className="heading-lg text-lg mb-4 text-center">🔥 最新学员评价</h3>
             <MiniReviews />
           </div>
         </div>
@@ -218,7 +275,7 @@ export default function HomePage() {
       <section className="py-16 bg-gradient-to-r from-purple-50 via-white to-pink-50">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto">
-            <Card className="border-primary/10 bg-white/80 backdrop-blur shadow-lg overflow-hidden">
+            <Card className="border-primary/10 bg-white/80 backdrop-blur card-premium overflow-hidden">
               <CardContent className="p-8 md:p-10">
                 <div className="flex flex-col md:flex-row items-center gap-8">
                   <div className="flex-1 text-center md:text-left">
@@ -226,26 +283,27 @@ export default function HomePage() {
                       <TrendingUp className="h-3 w-3" />
                       零成本创业机会
                     </div>
-                    <h2 className="text-2xl md:text-3xl font-bold mb-3">
-                      分享即赚钱，<br />
-                      <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
+                    <h2 className="heading-lg text-2xl md:text-3xl mb-3">
+                      分享即赚钱，
+                      <br />
+                      <span className="text-gradient-premium">
                         成为代理推广者
                       </span>
                     </h2>
-                    <p className="text-muted-foreground mb-6 text-sm">
+                    <p className="body-premium text-muted-foreground mb-6">
                       无需囤货、无需押金。分享专属链接，每成交一单获得
-                      <strong className="text-purple-600">10%-50%持续分佣</strong>。
+                      <strong className="text-premium-purple">10%-50%持续分佣</strong>。
                       已有代理月入3000+
                     </p>
                     <Link href="/agent">
-                      <Button className="gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
+                      <Button className="btn-rounded gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
                         了解代理计划 <ArrowRight className="h-4 w-4" />
                       </Button>
                     </Link>
                   </div>
                   <div className="flex-shrink-0">
-                    <div className="w-24 h-24 md:w-32 md:h-32 rounded-2xl bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center shadow-lg">
-                      <Share2 className="h-12 w-12 md:h-16 md:w-16 text-white" />
+                    <div className="w-24 h-24 md:w-32 md:h-32 rounded-2xl bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center shadow-premium">
+                      <Wallet className="h-12 w-12 md:h-16 md:w-16 text-white" />
                     </div>
                   </div>
                 </div>
@@ -255,32 +313,55 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ========== CTA ========== */}
-      <section className="py-20 relative">
+      {/* ========== 底部CTA - 行动号召 ========== */}
+      <section className="py-20 relative bg-gradient-to-b from-white to-purple-50/30">
         <SectionBackground />
         <div className="container mx-auto px-4 relative z-10 text-center">
-          <div className="max-w-md mx-auto">
+          <div className="max-w-lg mx-auto">
             <div className="flex justify-center mb-6">
-              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
-                <Zap className="h-8 w-8 text-primary" />
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-premium">
+                <Zap className="h-8 w-8 text-white" />
               </div>
             </div>
-            <h2 className="text-2xl md:text-3xl font-bold mb-3">准备好了吗？</h2>
-            <p className="text-muted-foreground mb-8">
-              注册即可浏览全部项目，找到适合你的创业方向。<br />
-              前 100 名注册用户永久免费
+            <h2 className="heading-xl text-3xl md:text-4xl mb-3">
+              别再看了，你做第
+              <span className="text-gradient-premium">2878</span>
+              个行动的
+            </h2>
+            <p className="body-premium text-muted-foreground mb-8 max-w-sm mx-auto">
+              前100名送《副业避坑手册》电子版<br />
+              别人已经在路上了，你还要等多久？
             </p>
-            <Link href="/login?tab=register">
-              <Button size="lg" className="shadow-lg shadow-primary/20 gap-2">
-                免费注册，开始探索 <ArrowRight className="h-4 w-4" />
+
+            {/* CTA 按钮 */}
+            <Link href="/pricing">
+              <Button size="lg" className="btn-rounded shadow-premium gap-2 text-lg px-10 py-7">
+                立即加入 <ArrowRight className="h-5 w-5" />
               </Button>
             </Link>
-            <p className="text-xs text-muted-foreground mt-4">无需信用卡 · 注册即用 · 不限次数浏览</p>
+            <p className="text-xs text-muted-foreground mt-4">不满意7天无理由退款 · 零风险</p>
+
+            {/* 微信兜底卡片 */}
+            <div className="mt-10 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-6 max-w-sm mx-auto">
+              <div className="flex items-center gap-2 mb-3 justify-center">
+                <span className="text-xl">💬</span>
+                <h3 className="font-bold text-green-800 text-sm">先看看免费的，觉得靠谱再付费</h3>
+              </div>
+              <p className="text-sm text-green-700 mb-3">
+                加客服微信，免费领2个项目方案看看
+              </p>
+              <div className="bg-white rounded-xl p-3 border border-green-100">
+                <p className="text-xs text-muted-foreground mb-1">客服微信号</p>
+                <p className="font-mono font-bold text-lg text-green-600">gcy892</p>
+                <p className="text-xs text-green-600/70 mt-1">备注"项目咨询"优先通过</p>
+              </div>
+              <p className="text-xs text-green-600/70 mt-3">
+                随时可删，零压力
+              </p>
+            </div>
           </div>
         </div>
       </section>
-
-      <WechatQRCodeFloating />
     </div>
   )
 }

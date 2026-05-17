@@ -5,10 +5,9 @@ import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
 import {
   Send, Loader2, Sparkles, Crown, Lock, TrendingUp,
-  RefreshCw, ChevronRight, Zap, MessageSquare
+  RefreshCw, Zap, MessageSquare
 } from "lucide-react"
 import Link from "next/link"
 
@@ -152,70 +151,8 @@ export default function AiAssistantPage() {
     )
   }
 
-  // 无订阅
-  if (statusLoaded && !subscription) {
-    return (
-      <div className="container mx-auto px-4 py-16 max-w-lg">
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <Sparkles className="h-8 w-8 text-white" />
-          </div>
-          <h1 className="text-2xl font-bold mb-2">AI 创业助手</h1>
-          <p className="text-muted-foreground">订阅后解锁全网最新创业机会分析</p>
-        </div>
-
-        <div className="grid gap-4 mb-8">
-          <Card className="border-2 border-purple-200 relative overflow-hidden">
-            <CardContent className="p-6">
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <Sparkles className="h-4 w-4 text-purple-600" />
-                    <span className="font-bold text-purple-700">创业者套餐</span>
-                    <Badge className="bg-purple-100 text-purple-700 border-0">¥29/月</Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground">每天5次AI创业查询</p>
-                </div>
-              </div>
-              <ul className="space-y-1.5 text-sm">
-                <li className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-purple-400" />查询全网最火创业项目和副业赛道</li>
-                <li className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-purple-400" />获取具体落地执行建议</li>
-                <li className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-purple-400" />每天5次查询额度</li>
-              </ul>
-            </CardContent>
-          </Card>
-
-          <Card className="border-2 border-amber-200">
-            <CardContent className="p-6">
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <Crown className="h-4 w-4 text-amber-600" />
-                    <span className="font-bold text-amber-700">合伙人套餐</span>
-                    <Badge className="bg-amber-100 text-amber-700 border-0">¥89/月</Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground">无限次 + 深度咨询模式</p>
-                </div>
-              </div>
-              <ul className="space-y-1.5 text-sm">
-                <li className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-amber-400" />无限次AI查询，随时查随时用</li>
-                <li className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-amber-400" />深度咨询模式：完整市场分析+执行路径</li>
-                <li className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-amber-400" />私密创业者社群 + 源码模板</li>
-              </ul>
-            </CardContent>
-          </Card>
-        </div>
-
-        <Link href="/pricing">
-          <Button className="w-full" size="lg">
-            立即订阅，解锁AI助手
-          </Button>
-        </Link>
-      </div>
-    )
-  }
-
   const isPartner = subscription?.plan === "合伙人"
+  const isFreeTier = !subscription
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] max-h-[calc(100vh-4rem)]">
@@ -272,6 +209,16 @@ export default function AiAssistantPage() {
           </button>
         </div>
       </div>
+
+      {/* 免费版提示 */}
+      {isFreeTier && (
+        <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-b border-purple-100 px-4 py-2 text-center shrink-0">
+          <p className="text-xs text-purple-700">
+            你正在使用<strong>免费版</strong>，每天可查询 <strong>5 次</strong>。
+            <Link href="/pricing" className="text-purple-600 underline font-medium ml-1">升级套餐享无限次 →</Link>
+          </p>
+        </div>
+      )}
 
       {/* 消息区域 */}
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4">

@@ -127,51 +127,95 @@ export function FeaturedProjectsSection() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {projects.map((project: any, index: number) => (
-              <Link key={project.id} href={`/projects/${project.id}`}>
-                <Card className={`h-full hover:border-primary/30 transition-all card-hover animate-fade-up-delay-${Math.min(index, 3)}`}>
-                  <CardHeader>
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <Badge variant="secondary" className="gap-1">{project.category}</Badge>
-                        {project.trending && (
-                          <Badge variant="outline" className="gap-1 text-amber-600 border-amber-200 bg-amber-50">
-                            <Zap className="h-3 w-3" /> 热门
+            {projects.map((project: any, index: number) => {
+              const isBlurred = index >= 3
+
+              if (!isBlurred) {
+                return (
+                  <Link key={project.id} href={`/projects/${project.id}`}>
+                    <Card className={`h-full hover:border-primary/30 transition-all card-hover animate-fade-up-delay-${Math.min(index, 3)}`}>
+                      <CardHeader>
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <Badge variant="secondary" className="gap-1">{project.category}</Badge>
+                            {project.trending && (
+                              <Badge variant="outline" className="gap-1 text-amber-600 border-amber-200 bg-amber-50">
+                                <Zap className="h-3 w-3" /> 热门
+                              </Badge>
+                            )}
+                            <Badge variant="outline" className="text-xs text-green-600 border-green-200 bg-green-50">免费可见</Badge>
+                          </div>
+                          <Badge variant={project.difficulty === "初级" ? "success" : project.difficulty === "中级" ? "warning" : "default"} className="shrink-0">
+                            {project.difficulty}
                           </Badge>
-                        )}
+                        </div>
+                        <CardTitle className="text-lg mt-2 group-hover:text-primary transition-colors">{project.title}</CardTitle>
+                        <p className="text-sm text-muted-foreground line-clamp-2">{project.hook}</p>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <span className="font-semibold text-primary">{project.income_estimate}</span>
+                            <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">启动成本 0元</span>
+                          </div>
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                              {project.likes || 0}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                              {project.comments || 0}
+                            </span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                )
+              }
+
+              // Blurred 4th card
+              return (
+                <div key={project.id} className="relative group">
+                  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/60 backdrop-blur-md rounded-xl border border-dashed border-purple-300">
+                    <div className="text-center px-4">
+                      <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                        <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
                       </div>
-                      <Badge variant={project.difficulty === "初级" ? "success" : project.difficulty === "中级" ? "warning" : "default"} className="shrink-0">
-                        {project.difficulty}
-                      </Badge>
+                      <p className="font-bold text-sm text-purple-700 mb-1">解锁全部项目</p>
+                      <p className="text-xs text-muted-foreground mb-3">还有 20+ 项目等你发现</p>
+                      <Link href="/pricing">
+                        <span className="inline-flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-medium rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all shadow-md">
+                          立即查看 <ArrowRight className="h-3.5 w-3.5" />
+                        </span>
+                      </Link>
                     </div>
-                    <CardTitle className="text-lg mt-2 group-hover:text-primary transition-colors">{project.title}</CardTitle>
-                    <p className="text-sm text-muted-foreground line-clamp-2">{project.hook}</p>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
+                  </div>
+                  <Card className="h-full opacity-30 pointer-events-none">
+                    <CardHeader>
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge variant="secondary" className="gap-1">{project.category}</Badge>
+                          <Badge variant="outline" className="text-xs text-purple-600 border-purple-200 bg-purple-50">付费专享</Badge>
+                        </div>
+                        <Badge variant="secondary" className="shrink-0">{project.difficulty}</Badge>
+                      </div>
+                      <CardTitle className="text-lg mt-2">{project.title}</CardTitle>
+                      <p className="text-sm text-muted-foreground line-clamp-2">{project.hook}</p>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center justify-between">
                         <span className="font-semibold text-primary">{project.income_estimate}</span>
-                        <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">启动成本 0元</span>
+                        <span className="text-xs text-muted-foreground">付费可见</span>
                       </div>
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                          {project.likes || 0}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                          {project.comments || 0}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                          {project.views || "—"}
-                        </span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
+                    </CardContent>
+                  </Card>
+                </div>
+              )
+            })}
           </div>
         )}
       </div>

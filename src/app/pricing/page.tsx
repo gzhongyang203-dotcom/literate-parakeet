@@ -1,6 +1,6 @@
 "use client"
 
-import { Check, Zap, Sparkles, Crown, Loader2, AlertTriangle, TrendingUp, Clock, Users, ShoppingCart, Timer, Flame } from "lucide-react"
+import { Check, Zap, Sparkles, Crown, Loader2, AlertTriangle, TrendingUp, Clock, Users, Timer, Flame, ShieldCheck, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
@@ -11,26 +11,27 @@ import { WechatQRCode } from "@/components/wechat-qrcode"
 
 const PLANS = [
   {
-    name: "免费版",
+    name: "先看看",
     icon: Zap,
     price: "0",
-    description: "浏览基本项目库，了解创业方向",
-    color: "border-gray-200",
+    description: "免费浏览基础项目，了解创业方向",
+    color: "border-gray-100 bg-gray-50/50",
     iconBg: "bg-gray-100",
-    iconColor: "text-gray-600",
+    iconColor: "text-gray-400",
     popular: false,
+    muted: true,
     features: [
-      { text: "浏览所有公开项目", included: true },
-      { text: "社区讨论参与", included: true },
+      { text: "浏览公开项目（部分可见）", included: true },
+      { text: "AI 创业雷达（每天5次）", included: true },
       { text: "基础协作功能", included: true },
-      { text: "AI 创业雷达（每天5次查询）", included: true },
       { text: "最新项目优先查看", included: false },
       { text: "完整执行指南 + 模板", included: false },
       { text: "私密创业者社群", included: false },
+      { text: "一对一创业指导", included: false },
       { text: "源码/文档模板下载", included: false },
     ],
-    cta: "免费注册",
-    href: "/login?tab=register",
+    cta: "先看看",
+    href: "/projects",
     action: null,
   },
   {
@@ -38,20 +39,21 @@ const PLANS = [
     icon: Sparkles,
     price: "29",
     planKey: "创业者",
-    description: "获取完整项目方案，跟步骤落地执行",
-    color: "border-purple-300 ring-2 ring-purple-200",
-    iconBg: "bg-purple-100",
-    iconColor: "text-purple-600",
+    originalPrice: "59",
+    description: "获取完整项目方案，跟着步骤落地执行",
+    color: "border-transparent ring-2 ring-purple-400",
+    iconBg: "bg-gradient-to-br from-purple-500 to-pink-500",
+    iconColor: "text-white",
     popular: true,
+    gradientBorder: true,
     features: [
-      { text: "浏览所有公开项目", included: true },
-      { text: "社区讨论参与", included: true },
-      { text: "协作匹配功能", included: true },
-      { text: "最新项目优先查看", included: true },
+      { text: "100+ 可执行项目方案（价值¥999）", included: true, highlight: true },
+      { text: "每日更新最新副业机会", included: true },
       { text: "完整执行指南 + 模板", included: true },
       { text: "AI 创业雷达（无限次查询）", included: true },
+      { text: "微信1v1创业咨询（价值¥299）", included: false },
+      { text: "行业内部群 + 私密社群", included: false },
       { text: "一对一创业指导", included: false },
-      { text: "行业内部群", included: false },
       { text: "源码/文档模板下载", included: false },
     ],
     cta: "立即订阅",
@@ -62,22 +64,21 @@ const PLANS = [
     icon: Crown,
     price: "89",
     planKey: "合伙人",
+    originalPrice: "199",
     description: "私密社群 + 1对1指导，快速跑通项目",
-    color: "border-amber-300",
-    iconBg: "bg-amber-100",
-    iconColor: "text-amber-600",
+    color: "border-amber-300 bg-amber-50/20",
+    iconBg: "bg-gradient-to-br from-amber-400 to-orange-500",
+    iconColor: "text-white",
     popular: false,
     features: [
-      { text: "浏览所有公开项目", included: true },
-      { text: "社区讨论参与", included: true },
-      { text: "协作匹配功能", included: true },
-      { text: "最新项目优先查看", included: true },
-      { text: "完整执行指南 + 模板", included: true },
-      { text: "AI 创业雷达（无限次查询）", included: true },
-      { text: "一对一创业指导", included: true },
-      { text: "行业内部群", included: true },
-      { text: "私密创业者社群", included: true },
+      { text: "创业者套餐全部权益", included: true },
+      { text: "一对一创业指导（价值¥999）", included: true, highlight: true },
+      { text: "行业内部群 + 私密社群", included: true, highlight: true },
       { text: "源码/文档模板下载", included: true },
+      { text: "优先内测新项目", included: true },
+      { text: "代理推广权（分佣50%）", included: true, highlight: true },
+      { text: "每月1次视频诊断", included: true },
+      { text: "无限次一对一指导", included: true },
     ],
     cta: "立即订阅",
     action: "subscribe",
@@ -86,22 +87,38 @@ const PLANS = [
 
 const FAQ = [
   { q: "订阅后可以退款吗？", a: "7天内无条件退款，直接联系客服即可。" },
-  { q: "免费版会一直免费吗？", a: "是的，免费版永久免费，每天可AI查询5次。升级付费版可获得无限次查询 + 行业内部群 + 一对一指导。" },
+  { q: "免费版会一直免费吗？", a: "是的，免费版永久免费，每天可AI查询5次。升级付费版可获得无限次查询 + 完整执行指南。" },
   { q: "AI创业雷达是什么？", a: "接入DeepSeek大模型的智能助手，实时分析全网最新创业项目、副业赛道和商业机会，给你具体可落地的建议。免费版每天5次，付费版无限次。" },
-  { q: "行业内部群是什么？", a: "按行业细分的小群，群内有行业导师定期分享最新动态和实战经验，帮助你快速找到适合自己的赛道。" },
   { q: "一对一指导是什么？", a: "合伙人套餐专属服务，可以获得针对你个人情况的创业方向诊断和落地指导。" },
   { q: "支付方式有哪些？", a: "支持微信支付、支付宝、银行卡，通过微信转账给客服即可开通。" },
   { q: "如何订阅？", a: "点击下方「立即订阅」，然后添加客服微信好友后转账即可秒开订阅。" },
 ]
 
-// 统计数据（模糊表述）
+// 犹豫解答
+const HESITATION_FAQ = [
+  {
+    q: "我什么都不会能行吗？",
+    a: "所有方案从零开始，保姆级教程。每个项目都有完整步骤、工具清单和收入预期，照着做就能跑起来。我们的学员80%都是零基础起步的。",
+    emoji: "🤔",
+  },
+  {
+    q: "怕坚持不下去？",
+    a: "微信社群每天打卡，别人都在跑。你看到群里天天有人晒收入截图，想偷懒都难。有目标有氛围，坚持变得容易。",
+    emoji: "💪",
+  },
+  {
+    q: "真的能赚到钱吗？",
+    a: "来看真实案例（含收入截图）。闲鱼代写月入5000+、小红书壁纸号月入8000+、情感咨询月入10000+，都是学员真实成绩。不保证暴富，但认真做一定能见到效果。",
+    emoji: "💰",
+  },
+]
+
 const STATS = [
   { icon: Users, value: "陆续加入", label: "创业者", color: "text-green-600" },
   { icon: TrendingUp, value: "稳步提升", label: "项目成功率", color: "text-blue-600" },
   { icon: Clock, value: "快速启动", label: "平均启动周期", color: "text-purple-600" },
 ]
 
-// 虚拟今日订单
 const TODAY_ORDERS = [
   { name: "张同学", location: "深圳", plan: "创业者套餐", time: "刚刚" },
   { name: "李女士", location: "广州", plan: "合伙人套餐", time: "2分钟前" },
@@ -110,7 +127,6 @@ const TODAY_ORDERS = [
   { name: "周网友", location: "杭州", plan: "合伙人套餐", time: "12分钟前" },
 ]
 
-// 焦虑文案
 const ANXIETY_ITEMS = [
   {
     emoji: "😰",
@@ -237,11 +253,11 @@ function PricingContent() {
         <div className="bg-gradient-to-r from-amber-100 to-orange-100 border border-amber-300 rounded-xl p-4 text-center">
           <div className="flex items-center justify-center gap-2 text-amber-700 mb-2">
             <Timer className="h-5 w-5" />
-            <span className="font-bold">🔥 本月限时优惠</span>
+            <span className="font-bold">🔥 限时特惠</span>
           </div>
           <p className="text-sm text-amber-600">
-            创业者套餐 <span className="font-bold line-through text-amber-400">¥89</span>
-            <span className="font-bold text-red-500 ml-2">仅需 ¥29/月</span>
+            创业者套餐 <span className="font-bold line-through text-amber-400">原价¥59/月</span>
+            <span className="font-bold text-red-500 ml-2 text-lg">仅需 ¥29/月</span>
           </p>
           <p className="text-xs text-amber-500 mt-1">优惠截止：还剩 7 天 23 小时</p>
         </div>
@@ -250,9 +266,9 @@ function PricingContent() {
       {/* Header */}
       <div className="text-center mb-12">
         <Badge variant="secondary" className="mb-4">订阅方案</Badge>
-        <h1 className="text-3xl md:text-4xl font-bold mb-4">选择适合你的方案</h1>
-        <p className="text-muted-foreground max-w-md mx-auto">
-          所有老项目永久免费。新项目 + 深度内容仅对订阅用户开放。
+        <h1 className="heading-lg text-3xl md:text-4xl mb-4">选择适合你的方案</h1>
+        <p className="body-premium text-muted-foreground max-w-md mx-auto">
+          所有老项目永久免费。新项目 + 深度内容仅对付费用户开放。
         </p>
         {subscription && (
           <Badge variant="success" className="mt-4">
@@ -271,22 +287,34 @@ function PricingContent() {
       )}
 
       {/* Plans */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-12">
         {PLANS.map((plan) => (
           <div
             key={plan.name}
-            className={`relative rounded-2xl border-2 ${plan.color} bg-white p-8 flex flex-col`}
+            className={`relative rounded-2xl border-2 ${plan.color} ${plan.muted ? "opacity-70 scale-[0.97]" : ""} p-8 flex flex-col ${
+              plan.gradientBorder ? "bg-white" : "bg-white"
+            }`}
           >
+            {/* Popular badge */}
             {plan.popular && (
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 px-4 py-1">
-                  最受欢迎
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
+                <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white border-0 px-5 py-1.5 text-sm font-bold shadow-lg">
+                  最多人选择 · 推荐
+                </Badge>
+              </div>
+            )}
+
+            {/* Price anchor badge */}
+            {"originalPrice" in plan && plan.originalPrice && (
+              <div className="absolute -top-4 right-3 z-10">
+                <Badge className="bg-red-100 text-red-600 border-red-200 text-xs">
+                  省¥{Number(plan.originalPrice) - Number(plan.price)}
                 </Badge>
               </div>
             )}
 
             <div className="flex items-center gap-3 mb-4">
-              <div className={`w-10 h-10 rounded-xl ${plan.iconBg} flex items-center justify-center`}>
+              <div className={`w-11 h-11 rounded-xl ${plan.iconBg} flex items-center justify-center`}>
                 <plan.icon className={`h-5 w-5 ${plan.iconColor}`} />
               </div>
               <h3 className="text-xl font-bold">{plan.name}</h3>
@@ -294,15 +322,25 @@ function PricingContent() {
 
             <p className="text-sm text-muted-foreground mb-4">{plan.description}</p>
 
+            {/* Price */}
             <div className="mb-6">
-              <span className="text-4xl font-bold">¥{plan.price}</span>
-              <span className="text-muted-foreground">/月</span>
+              <div className="flex items-baseline gap-1">
+                <span className="text-4xl font-bold">¥{plan.price}</span>
+                <span className="text-muted-foreground text-sm">/月</span>
+              </div>
+              {"originalPrice" in plan && plan.originalPrice && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  <span className="line-through">¥{plan.originalPrice}/月</span>
+                  <span className="text-red-500 ml-2 font-medium">限时优惠</span>
+                </p>
+              )}
             </div>
 
+            {/* CTA */}
             {plan.action === null ? (
               <Link href={plan.href}>
                 <Button
-                  className="w-full mb-6"
+                  className="w-full mb-6 btn-rounded"
                   variant={plan.popular ? "default" : "outline"}
                 >
                   {plan.cta}
@@ -310,7 +348,7 @@ function PricingContent() {
               </Link>
             ) : subscription ? (
               <Button
-                className="w-full mb-6"
+                className="w-full mb-6 btn-rounded"
                 variant="outline"
                 disabled
               >
@@ -318,7 +356,7 @@ function PricingContent() {
               </Button>
             ) : (
               <Button
-                className="w-full mb-6"
+                className={`w-full mb-6 btn-rounded ${plan.popular ? "shadow-premium" : ""}`}
                 variant={plan.popular ? "default" : "outline"}
                 onClick={() => handleSubscribe(plan.planKey!)}
                 disabled={loading === plan.planKey}
@@ -334,17 +372,22 @@ function PricingContent() {
               </Button>
             )}
 
-            <ul className="space-y-2.5 flex-1">
+            {/* Features */}
+            <ul className="space-y-3 flex-1">
               {plan.features.map((feat, i) => (
-                <li key={i} className="flex items-center gap-2.5">
+                <li key={i} className="flex items-start gap-2.5">
                   <Check
-                    className={`h-4 w-4 shrink-0 ${
+                    className={`h-4 w-4 shrink-0 mt-0.5 ${
                       feat.included ? "text-green-500" : "text-gray-300"
                     }`}
                   />
                   <span
-                    className={`text-sm ${
-                      feat.included ? "text-foreground" : "text-muted-foreground"
+                    className={`text-sm leading-relaxed ${
+                      feat.included
+                        ? (feat as any).highlight
+                          ? "text-foreground font-semibold"
+                          : "text-foreground"
+                        : "text-muted-foreground line-through"
                     }`}
                   >
                     {feat.text}
@@ -354,6 +397,30 @@ function PricingContent() {
             </ul>
           </div>
         ))}
+      </div>
+
+      {/* 犹豫解答 - 核心新增 */}
+      <div className="max-w-3xl mx-auto mb-16">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-amber-50 border border-amber-200 rounded-full mb-3">
+            <ShieldCheck className="h-4 w-4 text-amber-600" />
+            <span className="text-sm font-medium text-amber-700">还在犹豫？看看这个</span>
+          </div>
+          <h2 className="heading-lg text-2xl">你可能在担心的，我们都想到了</h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {HESITATION_FAQ.map((item, i) => (
+            <div
+              key={i}
+              className="bg-white border rounded-xl p-5 card-premium"
+            >
+              <div className="text-2xl mb-3">{item.emoji}</div>
+              <h3 className="font-bold text-base mb-2">{item.q}</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">{item.a}</p>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* 客服订阅说明 */}
@@ -398,7 +465,7 @@ function PricingContent() {
       {/* 行动号召 */}
       {!subscription && (
         <div className="max-w-2xl mx-auto text-center mb-12">
-          <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-2xl p-8">
+          <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-2xl p-8 shadow-premium">
             <h3 className="text-xl font-bold mb-2">别再观望了</h3>
             <p className="text-white/80 mb-4">
               每天不到1块钱，获取一个有结果的项目库。<br />
@@ -406,21 +473,40 @@ function PricingContent() {
             </p>
             <Button
               size="lg"
-              className="bg-white text-purple-600 hover:bg-white/90"
+              className="bg-white text-purple-600 hover:bg-white/90 btn-rounded shadow-lg"
               onClick={() => {
                 if (!user) router.push("/login?redirect=/pricing")
                 else handleSubscribe("创业者")
               }}
             >
-              立即开始 →
+              立即开始 <ArrowRight className="h-4 w-4 ml-1" />
             </Button>
           </div>
         </div>
       )}
 
+      {/* 追加微信兜底卡片 */}
+      <div className="max-w-md mx-auto text-center mb-12">
+        <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-6">
+          <p className="text-sm text-green-700 mb-2">
+            💬 不想马上付费？先加微信看看
+          </p>
+          <p className="text-xs text-green-600/70 mb-3">
+            免费领2个项目方案，觉得靠谱再决定
+          </p>
+          <div className="bg-white rounded-xl p-3 border border-green-100 inline-block">
+            <p className="text-xs text-muted-foreground mb-1">客服微信号</p>
+            <p className="font-mono font-bold text-lg text-green-600">gcy892</p>
+          </div>
+          <p className="text-xs text-green-600/70 mt-3">
+            随时可删，零压力
+          </p>
+        </div>
+      </div>
+
       {/* FAQ */}
       <div className="max-w-2xl mx-auto">
-        <h2 className="text-2xl font-bold text-center mb-8">常见问题</h2>
+        <h2 className="heading-lg text-2xl text-center mb-8">常见问题</h2>
         <div className="space-y-3">
           {FAQ.map((item, i) => (
             <details key={i} className="group border rounded-xl p-4 cursor-pointer hover:border-primary/30 transition-colors">

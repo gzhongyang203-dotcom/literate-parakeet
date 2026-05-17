@@ -10,10 +10,28 @@ import {
 // POST /api/wechat-bot/poll
 // 由 Vercel Cron 调用（每2分钟），只负责拉取消息并入库
 // AI 处理由 /api/wechat-bot/process 异步执行
-export async function POST() {
+export async function POST(request: Request) {
   let pollingLocked = false
 
   try {
+    // 鉴权：仅允许 Vercel Cron 或同源调用
+    const cronSecret = request.headers.get("x-vercel-cron-secret")
+    const configuredSecret = process.env.CRON_SECRET
+    if (configuredSecret && cronSecret !== configuredSecret) {
+      // 非 Cron，检查是否同源调用
+      const origin = request.headers.get("origin") || request.headers.get("host") || ""
+      const allowedOrigins = [
+        process.env.NEXT_PUBLIC_SITE_URL,
+        process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
+        "http://localhost:3000",
+      ].filter(Boolean)
+      const isAllowed = allowedOrigins.some((ao) => ao && origin.includes(ao.replace(/^https?:\/\//, "")))
+      if (!isAllowed) {
+        console.warn("[WeChat Bot Poll] 未授权调用被拒绝, origin:", origin)
+        return NextResponse.json({ error: "unauthorized" }, { status: 403 })
+      }
+    }
+
     const supabase = await createClient()
     const adminSupabase = getAdminClient()
     const writer = adminSupabase || supabase
@@ -147,6 +165,6 @@ export async function POST() {
   }
 }
 
-export async function GET() {
-  return POST()
+export async function GET(request: Request) {
+  return POST(request)
 }

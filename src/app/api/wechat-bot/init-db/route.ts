@@ -63,8 +63,8 @@ export async function GET() {
       data: inserted 
     })
 
-  } catch (err: any) {
-    console.error("[Init DB] error:", err)
+  } catch (err: unknown) {
+    console.error("[Init DB] error:", err instanceof Error ? err.message : String(err))
     return NextResponse.json({ error: "服务器错误" }, { status: 500 })
   }
 }

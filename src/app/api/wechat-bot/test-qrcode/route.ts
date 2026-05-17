@@ -43,8 +43,8 @@ export async function GET() {
       ilink_msg: qrData.msg
     })
     
-  } catch (err: any) {
-    console.error("[TEST QR] 错误:", err)
+  } catch (err: unknown) {
+    console.error("[TEST QR] 错误:", err instanceof Error ? err.message : String(err))
     return NextResponse.json({ error: "iLink API 调用失败" }, { status: 500 })
   }
 }

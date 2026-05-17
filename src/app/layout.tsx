@@ -3,6 +3,7 @@ import "./globals.css"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { AiChatWidget } from "@/components/ai-chat-widget"
+import { FloatingWechatButton } from "@/components/floating-wechat-button"
 
 export const metadata: Metadata = {
   title: "创业导航 | 普通人也能上手的创业项目库",
@@ -54,6 +55,9 @@ export default function RootLayout({
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />
+        {/* 主要转化入口 - 右下角悬浮微信按钮 */}
+        <FloatingWechatButton />
+        {/* 辅助客服入口 - 左下角，低侵入性 */}
         <AiChatWidget />
       </body>
     </html>

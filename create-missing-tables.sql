@@ -33,10 +33,8 @@ CREATE POLICY "Users can update own logs"
   ON ai_chat_logs FOR UPDATE
   USING (auth.uid() = user_id);
 
--- Service Role 可写入（API 调用需要）
-CREATE POLICY "Service role can do everything"
-  ON ai_chat_logs FOR ALL
-  USING (true);
+-- 注意：service_role 连接天然绕过 RLS，无需额外策略
+-- 管理员通过 service_role key 写入时自动绕过 RLS
 
 -- 自动更新 updated_at 触发器
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -101,10 +99,8 @@ CREATE POLICY "Admins can update submissions"
     EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
   );
 
--- Service Role 可写入
-CREATE POLICY "Service role can do everything"
-  ON payment_submissions FOR ALL
-  USING (true);
+-- 注意：service_role 连接天然绕过 RLS，无需额外策略
+-- 管理员通过 service_role key 审核时自动绕过 RLS
 
 -- 自动更新 updated_at 触发器
 CREATE TRIGGER update_payment_submissions_updated_at

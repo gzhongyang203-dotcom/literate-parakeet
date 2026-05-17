@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { createClient } from "@/lib/supabase/client"
 import type { User } from "@supabase/supabase-js"
-import { User as UserIcon, FileText, Users, LogOut, Loader2, CreditCard, Crown, Zap, Clock, CheckCircle2, XCircle } from "lucide-react"
+import { User as UserIcon, FileText, Users, LogOut, CreditCard, Crown, Zap, Clock, CheckCircle2, XCircle } from "lucide-react"
 import Link from "next/link"
 
 interface Profile {
@@ -40,7 +40,7 @@ export default function DashboardPage() {
     const fetchData = async () => {
       const supabase = createClient()
 
-      // Get user
+      // Step 1: Auth check
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
         setLoading(false)
@@ -48,60 +48,26 @@ export default function DashboardPage() {
       }
       setUser(user)
 
-      // Get profile
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single()
+      // Step 2: All data queries in parallel (was 4 sequential round-trips)
+      const [
+        profileRes,
+        subRes,
+        paymentRes,
+        myProjectsRes,
+        pubCountRes,
+      ] = await Promise.all([
+        supabase.from("profiles").select("*").eq("id", user.id).single(),
+        supabase.from("subscriptions").select("*").eq("user_id", user.id).eq("status", "active").single(),
+        fetch("/api/payment-status").then(r => r.ok ? r.json() : null).catch(() => null),
+        fetch("/api/projects").then(r => r.ok ? r.json() : null).catch(() => null),
+        supabase.from("projects").select("*", { count: "exact", head: true }).eq("status", "published"),
+      ])
 
-      if (profileData) {
-        setProfile(profileData)
-      }
-
-      // Get subscription
-      const { data: subData } = await supabase
-        .from("subscriptions")
-        .select("*")
-        .eq("user_id", user.id)
-        .eq("status", "active")
-        .single()
-
-      if (subData) {
-        setSubscription(subData)
-      }
-
-      // 获取支付提交状态
-      if (!subData) {
-        try {
-          const res = await fetch("/api/payment-status")
-          if (res.ok) {
-            const data = await res.json()
-            setPendingSubmissions(data.submissions || [])
-          }
-        } catch (err) {
-          console.error("获取支付状态失败:", err)
-        }
-      }
-
-      // 获取项目统计
-      try {
-        const [myProjectsRes, pubCountRes] = await Promise.all([
-          fetch("/api/projects"),
-          supabase.from("projects").select("*", { count: "exact", head: true }).eq("status", "published")
-        ])
-
-        if (myProjectsRes.ok) {
-          const myData = await myProjectsRes.json()
-          setMyProjectCount(myData.projects?.length || 0)
-        }
-
-        if (!pubCountRes.error) {
-          setPublishedProjectCount(pubCountRes.count || 0)
-        }
-      } catch (err) {
-        console.error("获取项目统计失败:", err)
-      }
+      if (profileRes.data) setProfile(profileRes.data)
+      if (subRes.data) setSubscription(subRes.data)
+      if (paymentRes) setPendingSubmissions(paymentRes.submissions || [])
+      if (myProjectsRes) setMyProjectCount(myProjectsRes.projects?.length || 0)
+      if (!pubCountRes.error) setPublishedProjectCount(pubCountRes.count || 0)
 
       setLoading(false)
     }
@@ -118,8 +84,29 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="container mx-auto px-4 py-8 animate-pulse">
+        {/* Profile skeleton */}
+        <div className="flex items-center gap-4 mb-8">
+          <div className="w-16 h-16 rounded-full bg-muted" />
+          <div className="space-y-2">
+            <div className="h-6 w-32 bg-muted rounded" />
+            <div className="h-4 w-48 bg-muted rounded" />
+          </div>
+        </div>
+        {/* Subscription skeleton */}
+        <div className="h-24 bg-muted rounded-xl mb-8" />
+        {/* Stats skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="h-32 bg-muted rounded-xl" />
+          ))}
+        </div>
+        {/* Quick links skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="h-24 bg-muted rounded-xl" />
+          ))}
+        </div>
       </div>
     )
   }

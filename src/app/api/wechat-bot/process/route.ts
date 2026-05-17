@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { getAdminClient } from "@/lib/supabase/admin"
+import type { SupabaseClient } from "@supabase/supabase-js"
 import {
   ILINK_BASE,
   sendTextMessage,
@@ -50,7 +51,7 @@ async function getAIReply(userMessage: string, fromUserName: string): Promise<st
 }
 
 // 自动清理30天前的消息
-async function cleanupOldMessages(adminSupabase: any) {
+async function cleanupOldMessages(adminSupabase: SupabaseClient) {
   try {
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
     const { count } = await adminSupabase

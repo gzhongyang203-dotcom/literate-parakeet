@@ -21,7 +21,12 @@ import {
   Flame,
   Share2,
   FolderKanban,
+  Tag,
 } from "lucide-react"
+
+// Auth state cache: sessionStorage with 3-min TTL, avoids 3 redundant Supabase calls on every page
+const AUTH_CACHE_KEY = "wb_auth"
+const AUTH_CACHE_TTL = 3 * 60 * 1000
 
 interface NavItem {
   label: string
@@ -42,6 +47,12 @@ const navItems: NavItem[] = [
     highlight: true
   },
   { label: "协作广场", href: "/collaborate" },
+  { 
+    label: "定价", 
+    href: "/pricing",
+    icon: Tag,
+    highlight: true
+  },
   { label: "关于", href: "/about" },
 ]
 
@@ -63,36 +74,66 @@ export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const fetchedRef = useRef(false)
 
   useEffect(() => {
+    // React Strict Mode guard
+    if (fetchedRef.current) return
+    fetchedRef.current = true
+
     const fetchUserData = async () => {
+      // 1. Try sessionStorage cache first (instant render, 0ms)
+      try {
+        const cached = sessionStorage.getItem(AUTH_CACHE_KEY)
+        if (cached) {
+          const parsed = JSON.parse(cached)
+          if (Date.now() - parsed.ts < AUTH_CACHE_TTL) {
+            setUser(parsed.user)
+            setProfile(parsed.profile)
+            setSubscription(parsed.sub)
+          }
+        }
+      } catch { /* corrupted cache, ignore */ }
+
+      // 2. Background refresh from Supabase
       const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
+      const { data: { user: freshUser } } = await supabase.auth.getUser()
+      setUser(freshUser)
 
-      if (user) {
-        // Get profile
-        const { data: profileData } = await supabase
-          .from("profiles")
-          .select("nickname, role")
-          .eq("id", user.id)
-          .single()
+      if (freshUser) {
+        // 3. Parallelize profile + subscription (was sequential, now concurrent)
+        const [profileRes, subRes] = await Promise.all([
+          supabase
+            .from("profiles")
+            .select("nickname, role")
+            .eq("id", freshUser.id)
+            .single(),
+          supabase
+            .from("subscriptions")
+            .select("plan, status")
+            .eq("user_id", freshUser.id)
+            .eq("status", "active")
+            .single(),
+        ])
 
-        if (profileData) {
-          setProfile(profileData)
-        }
+        const freshProfile = profileRes.data
+        const freshSub = subRes.data
 
-        // Get subscription
-        const { data: subData } = await supabase
-          .from("subscriptions")
-          .select("plan, status")
-          .eq("user_id", user.id)
-          .eq("status", "active")
-          .single()
+        if (freshProfile) setProfile(freshProfile)
+        if (freshSub) setSubscription(freshSub)
 
-        if (subData) {
-          setSubscription(subData)
-        }
+        // 4. Update cache for next mount
+        try {
+          sessionStorage.setItem(AUTH_CACHE_KEY, JSON.stringify({
+            user: freshUser,
+            profile: freshProfile,
+            sub: freshSub,
+            ts: Date.now(),
+          }))
+        } catch { /* storage full, ignore */ }
+      } else {
+        // Clear stale cache on logout
+        try { sessionStorage.removeItem(AUTH_CACHE_KEY) } catch {}
       }
     }
 
@@ -137,7 +178,7 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 md:backdrop-blur md:supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">

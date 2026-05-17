@@ -177,9 +177,8 @@ DROP POLICY IF EXISTS "Users can view own subscription" ON subscriptions;
 CREATE POLICY "Users can view own subscription" ON subscriptions
   FOR SELECT USING (auth.uid() = user_id);
 
-DROP POLICY IF EXISTS "Service role can manage subscriptions" ON subscriptions;
-CREATE POLICY "Service role can manage subscriptions" ON subscriptions
-  FOR ALL USING (true);
+-- 注意：service_role 连接天然绕过 RLS，无需 USING (true) 策略
+-- 管理员/API 通过 service_role key 操作 subscriptions，自动绕过 RLS
 
 -- likes 策略
 DROP POLICY IF EXISTS "Anyone can view likes" ON likes;

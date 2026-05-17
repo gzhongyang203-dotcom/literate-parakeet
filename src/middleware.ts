@@ -30,9 +30,12 @@ export async function updateSession(request: NextRequest) {
     },
   })
 
+  // getSession() reads from cookies (no network call)
+  // vs getUser() which calls Supabase API every request
   const {
-    data: { user },
-  } = await supabase.auth.getUser()
+    data: { session },
+  } = await supabase.auth.getSession()
+  const user = session?.user ?? null
 
   const protectedPaths = ["/dashboard", "/profile", "/payment", "/ai-assistant"]
   const isProtected = protectedPaths.some((path) =>

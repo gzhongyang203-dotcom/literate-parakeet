@@ -6,6 +6,9 @@ import { Input } from "@/components/ui/input"
 import { createClient } from "@/lib/supabase/server"
 import { Search } from "lucide-react"
 
+// ISR: revalidate page every 60 seconds (avoids DB call on every request)
+export const revalidate = 60
+
 const DEMO_PROJECTS = [
   { id: "1", title: "闲鱼AI代写服务", hook: "用AI帮人写工作总结、小红书文案，0成本启动", category: "闲鱼", difficulty: "初级", income_estimate: "月入500-3000" },
   { id: "2", title: "小红书AI壁纸号", hook: "AI生成精美壁纸，发小红书引流私域变现", category: "小红书", difficulty: "初级", income_estimate: "月入1000-5000" },

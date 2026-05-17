@@ -22,6 +22,19 @@
   --input: #e2e8f0;
   --ring: #8b5cf6;
   --radius: 0.5rem;
+
+  /* ---------- Premium 色阶 ---------- */
+  --premium-gold: #f59e0b;
+  --premium-purple: #7c3aed;
+  --premium-rose: #e11d48;
+  --premium-amber: #d97706;
+  --premium-emerald: #059669;
+
+  /* ---------- 增强阴影 ---------- */
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.06);
+  --shadow-card-hover: 0 4px 8px rgba(0,0,0,0.06), 0 12px 32px rgba(139, 92, 246, 0.12);
+  --shadow-premium: 0 8px 30px rgba(124, 58, 237, 0.15), 0 2px 8px rgba(0,0,0,0.08);
+  --shadow-gold: 0 8px 30px rgba(245, 158, 11, 0.2), 0 2px 8px rgba(0,0,0,0.06);
 }
 
 @theme inline {
@@ -50,6 +63,13 @@
   --radius-xl: calc(var(--radius) + 4px);
   --font-sans: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
   --font-mono: "Menlo", "Monaco", "Consolas", monospace;
+
+  /* Premium 色阶变量映射 */
+  --color-premium-gold: var(--premium-gold);
+  --color-premium-purple: var(--premium-purple);
+  --color-premium-rose: var(--premium-rose);
+  --color-premium-amber: var(--premium-amber);
+  --color-premium-emerald: var(--premium-emerald);
 }
 
 * {
@@ -59,7 +79,7 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
 }
 
 /* ---------- 背景装饰图案 ---------- */
@@ -148,7 +168,15 @@ body {
 
 /* ---------- 按钮增强 ---------- */
 button, a[role="button"] {
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* 移动端优化: 消除300ms点击延迟 + 禁用点击高亮 */
+@media (pointer: coarse) {
+  button, a, [role="button"] {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
 }
 
 /* 聚焦状态 */
@@ -249,4 +277,99 @@ button, a[role="button"] {
   padding-left: 1rem;
   color: var(--muted-foreground);
   margin: 1rem 0;
+}
+
+/* ---------- Premium 排版与效果 ---------- */
+
+/* 渐变文字（紫→金） */
+.text-gradient-premium {
+  background: linear-gradient(135deg, var(--premium-purple), #a78bfa, var(--premium-gold));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* 金色渐变文字 */
+.text-gradient-gold {
+  background: linear-gradient(135deg, var(--premium-amber), var(--premium-gold), #fbbf24);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* 标题排版规范 */
+.heading-xl {
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+}
+.heading-lg {
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+}
+
+/* 正文精致排版 */
+.body-premium {
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+/* Premium 卡片阴影 */
+.card-premium {
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.3s ease, transform 0.3s ease, border-color 0.3s ease;
+}
+.card-premium:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-2px);
+}
+
+/* 渐变边框卡片（紫→金） */
+.card-gradient-border {
+  position: relative;
+  background: white;
+  border-radius: 16px;
+}
+.card-gradient-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  padding: 2px;
+  background: linear-gradient(135deg, var(--premium-purple), #a78bfa, var(--premium-gold));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* 毛玻璃模糊遮罩 */
+.glass-blur-overlay {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.6);
+}
+
+/* 按钮统一圆角 */
+.btn-rounded {
+  border-radius: 12px;
+}
+
+/* 渐入动画（用于社交证明滚动） */
+@keyframes slide-up-fade {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-slide-up {
+  animation: slide-up-fade 0.5s ease-out forwards;
+}
+
+/* 脉冲呼吸（低调版，用于徽章） */
+@keyframes breathe {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+.animate-breathe {
+  animation: breathe 2.5s ease-in-out infinite;
 }
