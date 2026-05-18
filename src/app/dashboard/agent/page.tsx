@@ -326,7 +326,7 @@ export default function AgentDashboardPage() {
           <div className="flex flex-col items-center gap-4 py-4">
             <div className="w-48 h-48 bg-white rounded-xl flex items-center justify-center border-2 border-gray-200 p-2">
               {stats?.inviteCode ? (
-                <QRCodeSVG value={`https://literate-parakeet-mu.vercel.app/register?code=${stats.inviteCode}`} size={180} level="M" includeMargin={false} />
+                <QRCodeSVG value={`https://chuangyedaohang.com/register?code=${stats.inviteCode}`} size={180} level="M" includeMargin={false} />
               ) : (
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
               )}

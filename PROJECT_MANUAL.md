@@ -12,7 +12,7 @@
 |------|------|
 | **项目名称** | 创业导航 (Literate Parakeet) |
 | **一句话定位** | AI 驱动的创业项目导航平台 |
-| **网址** | https://literate-parakeet-mu.vercel.app |
+| **网址** | https://chuangyedaohang.com |
 | **GitHub** | https://github.com/gzhongyang203-dotcom/literate-parakeet |
 
 ### 核心技术栈
@@ -152,13 +152,13 @@
 
 ### 5.1 登录管理后台
 
-1. 打开 https://literate-parakeet-mu.vercel.app/login
+1. 打开 https://chuangyedaohang.com/login
 2. 使用管理员账号登录
 3. 点击右上角"后台管理"
 
 ### 5.2 登录微信 Bot
 
-1. 打开 https://literate-parakeet-mu.vercel.app/admin/wechat-bot
+1. 打开 https://chuangyedaohang.com/admin/wechat-bot
 2. 点击「获取登录二维码」
 3. 用微信扫描二维码
 4. 等待状态变为"在线"
@@ -213,7 +213,7 @@
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://qduisyqrzhhqwwrkzniw.supabase.co` | Production |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `sb_publishable_Qbn5LSu50iht4gDJtMWomA_kWu9JQAR` | Production |
 | `DEEPSEEK_API_KEY` | `sk-57f4858d2ac249d590b08991b8ee868c` | Production |
-| `NEXT_PUBLIC_SITE_URL` | `https://literate-parakeet-mu.vercel.app` | Production |
+| `NEXT_PUBLIC_SITE_URL` | `https://chuangyedaohang.com` | Production |
 
 ### 本地 .env.local
 

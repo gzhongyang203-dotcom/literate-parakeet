@@ -4,7 +4,7 @@
 **创业导航** - 一个可订阅的创业项目库网站
 
 ## 线上地址
-- 网站：https://literate-parakeet-mu.vercel.app
+- 网站：https://chuangyedaohang.com
 - GitHub：https://github.com/gzhongyang203-dotcom/literate-parakeet
 
 ## 技术栈

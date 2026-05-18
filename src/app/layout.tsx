@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "创业导航 | 普通人也能上手的创业项目库",
     description: "发现可落地的创业项目，找到一起干的小伙伴。持续更新，小白友好。",
-    url: "https://literate-parakeet-mu.vercel.app",
+    url: "https://chuangyedaohang.com",
     siteName: "创业导航",
     locale: "zh_CN",
     type: "website",

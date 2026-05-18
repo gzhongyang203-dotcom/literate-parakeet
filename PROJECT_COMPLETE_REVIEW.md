@@ -26,12 +26,12 @@
 
 | 地址类型 | URL |
 |---------|-----|
-| **生产网站** | https://literate-parakeet-mu.vercel.app |
+| **生产网站** | https://chuangyedaohang.com |
 | **GitHub 仓库** | https://github.com/gzhongyang203-dotcom/literate-parakeet |
 | **Supabase 后台** | https://supabase.com/dashboard/project/qduisyqrzhhqwwrkzniw |
 | **Vercel 后台** | https://vercel.com/gzhongyang203-dotcoms-projects/literate-parakeet |
-| **管理后台** | https://literate-parakeet-mu.vercel.app/admin |
-| **微信 Bot 管理** | https://literate-parakeet-mu.vercel.app/admin/wechat-bot |
+| **管理后台** | https://chuangyedaohang.com/admin |
+| **微信 Bot 管理** | https://chuangyedaohang.com/admin/wechat-bot |
 | **DeepSeek 控制台** | https://platform.deepseek.com/api_keys |
 | **iLink API** | https://ilinkai.weixin.qq.com |
 
@@ -360,8 +360,8 @@ CREATE POLICY "Admins can do everything" ON payment_submissions FOR ALL USING (
 ## 十、给下一个 AI 的备注
 
 - **项目根目录**：`C:\Users\勿念\WorkBuddy\2026-05-05-task-1\`（不是 session 目录）
-- **实时地址**：`https://literate-parakeet-mu.vercel.app`
-- **微信 Bot 管理**：`https://literate-parakeet-mu.vercel.app/admin/wechat-bot`
+- **实时地址**：`https://chuangyedaohang.com`
+- **微信 Bot 管理**：`https://chuangyedaohang.com/admin/wechat-bot`
 - **Vercel 部署**通过 GitHub push 触发，GitHub：`gzhongyang203-dotcom/literate-parakeet`
 - **微信 Bot 登录流程**：管理页扫码 → iLink API 获取 token → 存入 `bot_config` 表
 - **AI 对话限制**：免费用户每天 5 次，付费用户无限次，记录在 `ai_chat_logs` 表

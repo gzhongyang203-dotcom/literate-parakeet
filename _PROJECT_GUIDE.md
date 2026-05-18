@@ -1,7 +1,7 @@
 # 创业导航 - 项目完整说明
 
 ## 📌 线上地址
-**网站**: https://literate-parakeet-mu.vercel.app  
+**网站**: https://chuangyedaohang.com  
 **GitHub**: https://github.com/gzhongyang203-dotcom/literate-parakeet
 
 ---
