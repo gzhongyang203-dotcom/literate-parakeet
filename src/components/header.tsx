@@ -179,7 +179,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 md:backdrop-blur md:supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto flex h-16 items-center justify-between px-4">
+      <div className="container mx-auto flex h-14 sm:h-16 items-center justify-between px-4">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
           <Logo size="sm" />
@@ -307,7 +307,7 @@ export function Header() {
 
         {/* Mobile menu button */}
         <button
-          className="md:hidden p-2"
+          className="md:hidden p-2.5 -mr-2 rounded-lg hover:bg-muted active:bg-muted transition-colors"
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label={mobileOpen ? "关闭菜单" : "打开菜单"}
           aria-expanded={mobileOpen}
@@ -327,43 +327,43 @@ export function Header() {
         </button>
       </div>
 
-      {/* Mobile Nav */}
+        {/* Mobile Nav */}
       {mobileOpen && (
-        <nav role="navigation" aria-label="移动端导航" className="md:hidden border-t bg-background px-4 py-4 space-y-3">
+        <nav role="navigation" aria-label="移动端导航" className="md:hidden border-t bg-background px-4 py-3 space-y-1">
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-2 py-2 text-sm font-medium",
+                "flex items-center gap-3 py-3 text-sm font-medium rounded-lg px-3 -mx-1 active:bg-muted transition-colors",
                 pathname.startsWith(item.href)
-                  ? "text-primary"
+                  ? "text-primary bg-primary/5"
                   : "text-muted-foreground",
                 item.highlight && "text-orange-600 font-semibold"
               )}
               onClick={() => setMobileOpen(false)}
             >
-              {item.icon && <item.icon className="h-4 w-4" />}
+              {item.icon && <item.icon className="h-5 w-5" />}
               {item.label}
               {item.highlight && (
-                <span className="text-[10px] bg-orange-500 text-white px-1.5 py-0.5 rounded-full">
+                <span className="text-[10px] bg-orange-500 text-white px-1.5 py-0.5 rounded-full ml-auto">
                   热门
                 </span>
               )}
             </Link>
           ))}
-          <div className="pt-2 border-t flex gap-3">
+          <div className="pt-3 border-t flex gap-3">
             {user ? (
               <>
                 <Link href="/dashboard" className="flex-1">
-                  <Button variant="outline" size="sm" className="w-full">
+                  <Button variant="outline" size="sm" className="w-full py-2.5">
                     个人中心
                   </Button>
                 </Link>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="text-red-600"
+                  className="text-red-600 py-2.5"
                   onClick={handleLogout}
                 >
                   退出
@@ -372,12 +372,12 @@ export function Header() {
             ) : (
               <>
                 <Link href="/login" className="flex-1">
-                  <Button variant="outline" size="sm" className="w-full">
+                  <Button variant="outline" size="sm" className="w-full py-2.5">
                     登录
                   </Button>
                 </Link>
                 <Link href="/login?tab=register" className="flex-1">
-                  <Button size="sm" className="w-full">
+                  <Button size="sm" className="w-full py-2.5">
                     注册
                   </Button>
                 </Link>

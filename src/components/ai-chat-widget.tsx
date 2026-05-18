@@ -21,7 +21,7 @@ export function AiChatWidget() {
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="fixed bottom-6 left-6 z-40 w-10 h-10 rounded-full bg-white border border-gray-200 text-gray-500 shadow-sm hover:shadow-md hover:border-gray-300 hover:text-gray-700 transition-all flex items-center justify-center group"
+          className="fixed bottom-20 sm:bottom-6 left-4 sm:left-6 z-40 w-10 h-10 rounded-full bg-white border border-gray-200 text-gray-500 shadow-sm hover:shadow-md hover:border-gray-300 hover:text-gray-700 transition-all flex items-center justify-center group"
           aria-label="客服咨询"
         >
           <MessageCircle className="h-4 w-4" />

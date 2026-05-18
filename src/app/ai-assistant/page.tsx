@@ -155,9 +155,9 @@ export default function AiAssistantPage() {
   const isFreeTier = !subscription
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)] max-h-[calc(100vh-4rem)]">
+    <div className="flex flex-col h-[calc(100vh-4rem)] max-h-[calc(100vh-4rem)] h-[calc(100dvh-4rem)] max-h-[calc(100dvh-4rem)]" style={{ height: "calc(100dvh - 4rem)", maxHeight: "calc(100dvh - 4rem)" }}>
       {/* 顶部信息栏 */}
-      <div className="border-b bg-background px-4 py-3 flex items-center justify-between shrink-0">
+      <div className="border-b bg-background px-3 sm:px-4 py-2 sm:py-3 flex items-center justify-between shrink-0 flex-wrap gap-2">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
             <Sparkles className="h-4 w-4 text-white" />
@@ -221,7 +221,7 @@ export default function AiAssistantPage() {
       )}
 
       {/* 消息区域 */}
-      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4">
+      <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-4 sm:py-6 space-y-3 sm:space-y-4">
         {messages.length === 0 && (
           <div className="max-w-2xl mx-auto">
             {/* 欢迎语 */}
@@ -259,7 +259,7 @@ export default function AiAssistantPage() {
               </div>
             )}
             <div
-              className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap ${
+              className={`max-w-[85%] sm:max-w-[80%] rounded-2xl px-3 sm:px-4 py-2.5 sm:py-3 text-sm leading-relaxed whitespace-pre-wrap ${
                 msg.role === "user"
                   ? "bg-purple-600 text-white"
                   : "bg-muted text-foreground"
@@ -289,7 +289,7 @@ export default function AiAssistantPage() {
       </div>
 
       {/* 输入区域 */}
-      <div className="border-t bg-background px-4 py-4 shrink-0">
+      <div className="border-t bg-background px-3 sm:px-4 py-3 sm:py-4 shrink-0">
         <div className="max-w-2xl mx-auto">
           {remaining === 0 && !unlimited && (
             <div className="mb-3 text-center text-sm text-muted-foreground bg-amber-50 border border-amber-200 rounded-xl p-3">

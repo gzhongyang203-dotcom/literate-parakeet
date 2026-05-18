@@ -46,7 +46,7 @@ export default function HomePage() {
   return (
     <div>
       {/* ========== Hero - 情绪共鸣 ========== */}
-      <section className="relative overflow-hidden py-20 md:py-28">
+      <section className="relative overflow-hidden py-12 sm:py-16 md:py-28">
         <HeroBackground />
         <div className="container mx-auto relative px-4 z-10">
           <div className="max-w-3xl mx-auto text-center">
@@ -55,31 +55,31 @@ export default function HomePage() {
             </div>
 
             {/* 社会证明小字 */}
-            <p className="text-sm text-muted-foreground mb-5">
+            <p className="text-xs sm:text-sm text-muted-foreground mb-4 sm:mb-5">
               🔥 已有 <strong className="text-foreground">2,847 人</strong> 找到副业方向
             </p>
 
-            <h1 className="heading-xl text-4xl md:text-5xl lg:text-6xl mb-6">
+            <h1 className="heading-xl text-2xl sm:text-3xl md:text-5xl lg:text-6xl mb-4 sm:mb-6 px-2">
               你不是不想努力，
               <br />
               只是缺一个
               <span className="text-gradient-premium"> 能落地的副业</span>
             </h1>
 
-            <p className="body-premium text-muted-foreground mb-10 max-w-2xl mx-auto">
+            <p className="text-sm sm:text-base text-muted-foreground mb-6 sm:mb-10 max-w-2xl mx-auto leading-relaxed px-2">
               每天30分钟，第2个月副业收入超过工资
               <br className="hidden md:block" />
               不是鸡汤，是手把手带着做
             </p>
 
-            <div className="flex items-center justify-center gap-4 flex-wrap">
-              <Link href="/projects">
-                <Button size="lg" className="btn-rounded gap-2 shadow-lg shadow-primary/20 text-base px-8 py-6">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 px-2">
+              <Link href="/projects" className="w-full sm:w-auto">
+                <Button size="lg" className="btn-rounded gap-2 shadow-lg shadow-primary/20 text-sm sm:text-base px-6 sm:px-8 py-5 sm:py-6 w-full sm:w-auto">
                   看看别人在做什么 <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
-              <Link href="/pricing">
-                <Button variant="outline" size="lg" className="btn-rounded gap-2 text-base px-8 py-6">
+              <Link href="/pricing" className="w-full sm:w-auto">
+                <Button variant="outline" size="lg" className="btn-rounded gap-2 text-sm sm:text-base px-6 sm:px-8 py-5 sm:py-6 w-full sm:w-auto">
                   了解方案
                 </Button>
               </Link>
@@ -156,7 +156,7 @@ export default function HomePage() {
             </div>
             <div className="gradient-accent-bar w-16" />
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
             {categories.map((cat) => (
               <Link
                 key={cat.name}
@@ -235,10 +235,10 @@ export default function HomePage() {
       <section className="py-12">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto rounded-2xl border bg-gradient-to-br from-purple-50/50 via-white to-pink-50/50 p-8 md:p-10">
-            <div className="flex flex-col md:flex-row items-center gap-8">
+            <div className="flex flex-col md:flex-row items-center gap-6 md:gap-8">
               <div className="flex -space-x-3 shrink-0">
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white text-xs font-medium shadow-sm">
+                  <div key={i} className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-white bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white text-xs font-medium shadow-sm">
                     {["A","B","C","D","E"][i-1]}
                   </div>
                 ))}
@@ -272,7 +272,7 @@ export default function HomePage() {
       </section>
 
       {/* ========== 代理推广 ========== */}
-      <section className="py-16 bg-gradient-to-r from-purple-50 via-white to-pink-50">
+      <section className="py-10 sm:py-12 md:py-16 bg-gradient-to-r from-purple-50 via-white to-pink-50">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto">
             <Card className="border-primary/10 bg-white/80 backdrop-blur card-premium overflow-hidden">
@@ -314,7 +314,7 @@ export default function HomePage() {
       </section>
 
       {/* ========== 底部CTA - 行动号召 ========== */}
-      <section className="py-20 relative bg-gradient-to-b from-white to-purple-50/30">
+      <section className="py-12 sm:py-16 md:py-20 relative bg-gradient-to-b from-white to-purple-50/30">
         <SectionBackground />
         <div className="container mx-auto px-4 relative z-10 text-center">
           <div className="max-w-lg mx-auto">
@@ -323,7 +323,7 @@ export default function HomePage() {
                 <Zap className="h-8 w-8 text-white" />
               </div>
             </div>
-            <h2 className="heading-xl text-3xl md:text-4xl mb-3">
+            <h2 className="heading-xl text-2xl sm:text-3xl md:text-4xl mb-3">
               别再看了，你做第
               <span className="text-gradient-premium">2878</span>
               个行动的

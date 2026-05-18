@@ -12,7 +12,7 @@ export function FloatingWechatButton() {
   return (
     <>
       {/* 悬浮圆形按钮 */}
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2">
+      <div className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-50 flex flex-col items-end gap-2">
         {/* 提示标签 */}
         {!showCard && (
           <div className="bg-white shadow-lg border rounded-xl px-3 py-1.5 animate-breathe">
@@ -49,7 +49,7 @@ export function FloatingWechatButton() {
       {/* 展开的二维码卡片 */}
       {showCard && (
         <div
-          className="fixed bottom-24 right-6 z-50 w-72 bg-white rounded-2xl shadow-2xl border animate-slide-up overflow-hidden"
+          className="fixed bottom-24 right-2 sm:right-6 z-50 w-[calc(100vw-16px)] sm:w-72 max-w-[288px] bg-white rounded-2xl shadow-2xl border animate-slide-up overflow-hidden"
         >
           {/* 卡片头部 */}
           <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-5 py-4">

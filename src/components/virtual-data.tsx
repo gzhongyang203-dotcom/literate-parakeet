@@ -73,17 +73,18 @@ export function OrderScroll() {
           {[...VIRTUAL_ORDERS, ...VIRTUAL_ORDERS].map((order, index) => (
             <div
               key={`${order.name}-${index}`}
-              className="flex items-center justify-between text-sm text-green-600/80"
+              className="flex items-center justify-between text-sm text-green-600/80 gap-2"
             >
-              <div className="flex items-center gap-2">
-                <span className="text-green-400">✓</span>
-                <span>{order.name}</span>
-                <span className="text-green-400/60">·</span>
-                <span>{order.location}</span>
-                <span className="text-green-400/60">·</span>
-                <span>购买了 {order.item}</span>
+              <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
+                <span className="text-green-400 flex-shrink-0">✓</span>
+                <span className="flex-shrink-0">{order.name}</span>
+                <span className="text-green-400/60 flex-shrink-0 hidden sm:inline">·</span>
+                <span className="flex-shrink-0 hidden sm:inline">{order.location}</span>
+                <span className="text-green-400/60 flex-shrink-0 hidden sm:inline">·</span>
+                <span className="truncate hidden sm:inline">购买了 {order.item}</span>
+                <span className="truncate sm:hidden">购买了</span>
               </div>
-              <span className="text-xs text-green-400/60 whitespace-nowrap">{TIME_LABELS[index % TIME_LABELS.length]}</span>
+              <span className="text-xs text-green-400/60 whitespace-nowrap flex-shrink-0">{TIME_LABELS[index % TIME_LABELS.length]}</span>
             </div>
           ))}
         </div>

@@ -182,7 +182,7 @@ function PricingContent() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-12">
+    <div className="container mx-auto px-4 py-8 sm:py-12">
       {/* 焦虑文案区 */}
       <div className="max-w-3xl mx-auto mb-8">
         <div className="bg-gradient-to-r from-red-50 to-orange-50 border border-red-100 rounded-2xl p-6 mb-6">
@@ -190,7 +190,7 @@ function PricingContent() {
             <AlertTriangle className="h-5 w-5 text-red-500" />
             <span className="font-bold text-red-600">你可能正在犯的错</span>
           </div>
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {ANXIETY_ITEMS.map((item, i) => (
               <div key={i} className="bg-white/80 rounded-xl p-4">
                 <div className="text-2xl mb-2">{item.emoji}</div>
@@ -216,16 +216,16 @@ function PricingContent() {
             {TODAY_ORDERS.map((order, index) => (
               <div
                 key={index}
-                className={`flex items-center justify-between text-sm gap-2 ${
+                className={`flex items-center justify-between text-xs sm:text-sm gap-2 ${
                   index === 0 ? "text-green-700 font-medium" : "text-green-600/80"
                 }`}
               >
-                <div className="flex items-center gap-1 flex-wrap min-w-0">
+                <div className="flex items-center gap-1 min-w-0 overflow-hidden">
                   <span className="text-green-400 flex-shrink-0">✓</span>
                   <span className="truncate">{order.name}</span>
-                  <span className="text-green-400/60 hidden sm:inline">·</span>
-                  <span className="hidden sm:inline">{order.location}</span>
-                  <span className="text-green-400/60">·</span>
+                  <span className="text-green-400/60 hidden sm:inline flex-shrink-0">·</span>
+                  <span className="hidden sm:inline flex-shrink-0">{order.location}</span>
+                  <span className="text-green-400/60 flex-shrink-0">·</span>
                   <span className="truncate">订阅了 {order.plan}</span>
                 </div>
                 <span className="text-xs text-green-400/60 flex-shrink-0">{order.time}</span>
@@ -266,7 +266,7 @@ function PricingContent() {
       {/* Header */}
       <div className="text-center mb-12">
         <Badge variant="secondary" className="mb-4">订阅方案</Badge>
-        <h1 className="heading-lg text-3xl md:text-4xl mb-4">选择适合你的方案</h1>
+        <h1 className="heading-lg text-2xl sm:text-3xl md:text-4xl mb-4">选择适合你的方案</h1>
         <p className="body-premium text-muted-foreground max-w-md mx-auto">
           所有老项目永久免费。新项目 + 深度内容仅对付费用户开放。
         </p>
@@ -435,7 +435,7 @@ function PricingContent() {
               </p>
             </div>
 
-            <div className="flex items-center gap-6 justify-center mb-4">
+            <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 justify-center mb-4">
               <div className="text-center">
                 <div className="relative mx-auto rounded-lg overflow-hidden border-2 border-green-200 w-28">
                   <WechatQRCode />
@@ -443,7 +443,7 @@ function PricingContent() {
                 <p className="text-xs text-muted-foreground mt-2">👆 长按识别</p>
               </div>
 
-              <div className="space-y-2 text-sm">
+              <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
                 <div className="flex items-center gap-2">
                   <span className="text-green-500">✓</span> 微信支付
                 </div>
