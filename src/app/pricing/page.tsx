@@ -1,6 +1,6 @@
 "use client"
 
-import { Check, Zap, Sparkles, Crown, Loader2, AlertTriangle, TrendingUp, Clock, Users, Timer, Flame, ShieldCheck, ArrowRight } from "lucide-react"
+import { Check, Zap, Sparkles, Crown, Loader2, AlertTriangle, TrendingUp, Clock, Users, Timer, Flame, ShieldCheck, ArrowRight, ExternalLink, Copy } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
@@ -151,6 +151,22 @@ function PricingContent() {
   const [subscription, setSubscription] = useState<any>(null)
   const [loading, setLoading] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
+
+  const openWechat = () => {
+    window.location.href = "weixin://"
+    setTimeout(() => {
+      navigator.clipboard.writeText("gcy892")
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }, 500)
+  }
+
+  const copyWechat = () => {
+    navigator.clipboard.writeText("gcy892")
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -443,18 +459,36 @@ function PricingContent() {
                 <p className="text-xs text-muted-foreground mt-2">👆 长按识别</p>
               </div>
 
-              <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                <div className="flex items-center gap-2">
-                  <span className="text-green-500">✓</span> 微信支付
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-green-500">✓</span> 支付宝
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-green-500">✓</span> 银行卡转账
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-green-500">✓</span> 7天退款保障
+              <div className="flex flex-col items-center gap-2">
+                <button
+                  onClick={openWechat}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all"
+                  style={{ backgroundColor: "#07C160", color: "#fff" }}
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  一键跳转微信
+                </button>
+                <button
+                  onClick={copyWechat}
+                  className="flex items-center gap-1 text-xs text-purple-600 hover:text-purple-800"
+                >
+                  <Copy className="h-3 w-3" />
+                  {copied ? "已复制" : "复制微信号 gcy892"}
+                </button>
+
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm mt-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-green-500">✓</span> 微信支付
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-green-500">✓</span> 支付宝
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-green-500">✓</span> 银行卡转账
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-green-500">✓</span> 7天退款保障
+                  </div>
                 </div>
               </div>
             </div>
@@ -494,9 +528,26 @@ function PricingContent() {
           <p className="text-xs text-green-600/70 mb-3">
             免费领2个项目方案，觉得靠谱再决定
           </p>
-          <div className="bg-white rounded-xl p-3 border border-green-100 inline-block">
+          <div className="bg-white rounded-xl p-3 border border-green-100 inline-block mb-3">
             <p className="text-xs text-muted-foreground mb-1">客服微信号</p>
             <p className="font-mono font-bold text-lg text-green-600">gcy892</p>
+          </div>
+          <div className="flex items-center justify-center gap-2">
+            <button
+              onClick={openWechat}
+              className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all"
+              style={{ backgroundColor: "#07C160", color: "#fff" }}
+            >
+              <ExternalLink className="h-4 w-4" />
+              一键跳转微信
+            </button>
+            <button
+              onClick={copyWechat}
+              className="flex items-center gap-1 px-4 py-2 rounded-full text-xs text-green-700 bg-white border border-green-200 hover:bg-green-50 transition-colors"
+            >
+              <Copy className="h-3 w-3" />
+              {copied ? "已复制" : "复制微信号"}
+            </button>
           </div>
           <p className="text-xs text-green-600/70 mt-3">
             随时可删，零压力

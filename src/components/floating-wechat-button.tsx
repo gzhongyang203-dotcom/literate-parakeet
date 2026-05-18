@@ -2,12 +2,30 @@
 
 import { useState } from "react"
 import Image from "next/image"
-import { X, MessageCircle } from "lucide-react"
+import { X, MessageCircle, ExternalLink, Copy } from "lucide-react"
 
 const WECHAT_ID = "gcy892"
 
 export function FloatingWechatButton() {
   const [showCard, setShowCard] = useState(false)
+  const [copied, setCopied] = useState(false)
+
+  const openWechat = () => {
+    // 尝试拉起微信 App
+    window.location.href = "weixin://"
+    // 兜底：500ms 后复制微信号
+    setTimeout(() => {
+      navigator.clipboard.writeText(WECHAT_ID)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }, 500)
+  }
+
+  const copyWechat = () => {
+    navigator.clipboard.writeText(WECHAT_ID)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   return (
     <>
@@ -85,6 +103,26 @@ export function FloatingWechatButton() {
               <p className="text-xs text-muted-foreground text-center mb-1">或手动搜索微信号</p>
               <p className="text-center font-mono font-bold text-base text-green-600">{WECHAT_ID}</p>
             </div>
+
+            {/* 一键跳转微信 */}
+            <button
+              onClick={openWechat}
+              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all mb-3"
+              style={{ backgroundColor: "#07C160", color: "#fff" }}
+            >
+              <ExternalLink className="h-4 w-4" />
+              一键跳转微信
+              {copied && <span className="text-xs opacity-80">(已复制)</span>}
+            </button>
+
+            {/* 复制微信号 */}
+            <button
+              onClick={copyWechat}
+              className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-xs text-muted-foreground bg-muted/50 hover:bg-muted transition-colors mb-3"
+            >
+              <Copy className="h-3 w-3" />
+              {copied ? "已复制" : "复制微信号"}
+            </button>
 
             {/* 好处列表 */}
             <div className="w-full bg-amber-50 border border-amber-200 rounded-xl p-3">

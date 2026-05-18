@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
-import { Check, Loader2, Upload, AlertCircle, Copy, CheckCircle2, Clock, XCircle, History, Shield, Zap, Users, Sparkles, ArrowRight, ChevronDown, MessageCircle } from "lucide-react"
+import { Check, Loader2, Upload, AlertCircle, Copy, CheckCircle2, Clock, XCircle, History, Shield, Zap, Users, Sparkles, ArrowRight, ChevronDown, MessageCircle, ExternalLink } from "lucide-react"
 import Image from "next/image"
 
 const PLAN_INFO = {
@@ -203,6 +203,17 @@ function PaymentContent() {
     setTimeout(() => setCopied(false), 2000)
   }
 
+  const openWechat = () => {
+    // 尝试拉起微信 App
+    window.location.href = "weixin://"
+    // 兜底：500ms 后复制微信号
+    setTimeout(() => {
+      navigator.clipboard.writeText("13785108266")
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }, 500)
+  }
+
   // Status badge helper
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -364,7 +375,19 @@ function PaymentContent() {
                 </div>
               </div>
               <p className="text-sm font-medium text-foreground">使用微信扫一扫付款</p>
-              <p className="text-xs text-muted-foreground">金额：¥{info.price}</p>
+              <p className="text-xs text-muted-foreground mb-3">金额：¥{info.price}</p>
+
+              {/* 一键跳转微信 */}
+              <button
+                onClick={openWechat}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all"
+                style={{ backgroundColor: "#07C160", color: "#fff" }}
+              >
+                <ExternalLink className="h-4 w-4" />
+                一键跳转微信付款
+                {copied && <span className="text-xs opacity-80 ml-1">(已复制微信号)</span>}
+              </button>
+              <p className="text-xs text-muted-foreground mt-1.5">如未跳转，微信号已自动复制</p>
             </div>
 
             {/* Secondary: Add friend QR */}
@@ -382,13 +405,23 @@ function PaymentContent() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium">加客服好友，审核更快</p>
                   <p className="text-xs text-muted-foreground">备注「订阅{planKey}」，优先通过</p>
-                  <button
-                    onClick={copyWechat}
-                    className="text-xs text-purple-600 hover:text-purple-800 mt-1 flex items-center gap-1"
-                  >
-                    <Copy className="h-3 w-3" />
-                    {copied ? "已复制" : "复制微信号 13785108266"}
-                  </button>
+                  <div className="flex items-center gap-2 mt-2">
+                    <button
+                      onClick={openWechat}
+                      className="text-xs px-3 py-1 rounded-full font-medium transition-colors inline-flex items-center gap-1"
+                      style={{ backgroundColor: "#07C160", color: "#fff" }}
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                      跳转微信
+                    </button>
+                    <button
+                      onClick={copyWechat}
+                      className="text-xs text-purple-600 hover:text-purple-800 flex items-center gap-1"
+                    >
+                      <Copy className="h-3 w-3" />
+                      {copied ? "已复制" : "复制微信号 13785108266"}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -541,14 +574,24 @@ function PaymentContent() {
         {/* ===== Bottom WeChat CTA ===== */}
         <div className="text-center pb-8">
           <p className="text-xs text-muted-foreground mb-2">有疑问？直接加微信问</p>
-          <button
-            onClick={copyWechat}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-200 rounded-full text-sm text-green-700 hover:bg-green-100 transition-colors"
-          >
-            <MessageCircle className="h-4 w-4" />
-            {copied ? "已复制" : "13785108266"}
-            {!copied && <Copy className="h-3 w-3" />}
-          </button>
+          <div className="flex items-center justify-center gap-2 flex-wrap">
+            <button
+              onClick={openWechat}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all"
+              style={{ backgroundColor: "#07C160", color: "#fff" }}
+            >
+              <ExternalLink className="h-4 w-4" />
+              一键跳转微信
+            </button>
+            <button
+              onClick={copyWechat}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-200 rounded-full text-sm text-green-700 hover:bg-green-100 transition-colors"
+            >
+              <MessageCircle className="h-4 w-4" />
+              {copied ? "已复制" : "13785108266"}
+              {!copied && <Copy className="h-3 w-3" />}
+            </button>
+          </div>
         </div>
 
       </div>

@@ -1,12 +1,12 @@
 "use client"
 
-import { Suspense, useState, useEffect, useCallback } from "react"
+import { Suspense, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { createClient } from "@/lib/supabase/client"
-import { Loader2, Smartphone, Lock, User, Gift, Share2, TrendingUp, ShieldCheck } from "lucide-react"
+import { Loader2, Smartphone, Lock, User, Gift, Share2, TrendingUp } from "lucide-react"
 
 // 格式化手机号为中国 E.164 格式
 function formatPhone(raw: string): string {
@@ -23,60 +23,17 @@ function RegisterForm() {
   const inviteCode = searchParams.get("code") || ""
 
   const [phone, setPhone] = useState("")
-  const [code, setCode] = useState("")
   const [password, setPassword] = useState("")
   const [nickname, setNickname] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState(false)
-  const [countdown, setCountdown] = useState(0)
-  const [codeSent, setCodeSent] = useState(false)
-
-  // 倒计时
-  useEffect(() => {
-    if (countdown <= 0) return
-    const timer = setTimeout(() => setCountdown(countdown - 1), 1000)
-    return () => clearTimeout(timer)
-  }, [countdown])
-
-  // 发送验证码
-  const sendCode = useCallback(async () => {
-    setError("")
-    const digits = phone.replace(/\D/g, "")
-    if (digits.length !== 11) {
-      setError("请输入正确的11位手机号")
-      return
-    }
-    setLoading(true)
-    try {
-      const supabase = createClient()
-      const formattedPhone = formatPhone(phone)
-      const { error: err } = await supabase.auth.signInWithOtp({
-        phone: formattedPhone,
-        options: { shouldCreateUser: true, channel: "sms" },
-      })
-      if (err) throw err
-      setCodeSent(true)
-      setCountdown(60)
-    } catch (e: any) {
-      if (e.message?.includes("provider") || e.message?.includes("not enabled")) {
-        setError("短信服务未配置，请先用密码注册。管理员请配置 Supabase SMS Provider")
-      } else {
-        setError(e.message || "发送验证码失败")
-      }
-    }
-    setLoading(false)
-  }, [phone])
 
   const handleRegister = async () => {
     setError("")
     const digits = phone.replace(/\D/g, "")
     if (digits.length !== 11) {
       setError("请输入正确的11位手机号")
-      return
-    }
-    if (!code || code.length < 6) {
-      setError("请输入6位验证码")
       return
     }
     if (!password || password.length < 6) {
@@ -88,23 +45,23 @@ function RegisterForm() {
       const supabase = createClient()
       const formattedPhone = formatPhone(phone)
 
-      // 验证手机号
-      const { error: verifyErr } = await supabase.auth.verifyOtp({
+      const { error: signUpErr } = await supabase.auth.signUp({
         phone: formattedPhone,
-        token: code,
-        type: "sms",
-      })
-      if (verifyErr) throw verifyErr
-
-      // 设置密码和昵称
-      const { error: updateErr } = await supabase.auth.updateUser({
         password,
-        data: {
-          nickname: nickname || `用户${digits.slice(-4)}`,
-          invite_code: inviteCode,
+        options: {
+          data: {
+            nickname: nickname || `用户${digits.slice(-4)}`,
+            invite_code: inviteCode,
+          },
         },
       })
-      if (updateErr) throw updateErr
+
+      if (signUpErr) {
+        if (signUpErr.message?.includes("provider") || signUpErr.message?.includes("not enabled")) {
+          throw new Error("短信服务未配置，请联系管理员。或尝试使用密码登录。")
+        }
+        throw signUpErr
+      }
 
       setSuccess(true)
     } catch (e: any) {
@@ -176,21 +133,6 @@ function RegisterForm() {
 
               {/* 注册表单 */}
               <div className="space-y-3 pt-2">
-                {/* 昵称 */}
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium">昵称</label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      type="text"
-                      placeholder="输入昵称（选填）"
-                      value={nickname}
-                      onChange={(e) => setNickname(e.target.value)}
-                      className="pl-9"
-                    />
-                  </div>
-                </div>
-
                 {/* 手机号 */}
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium">手机号</label>
@@ -206,33 +148,6 @@ function RegisterForm() {
                   </div>
                 </div>
 
-                {/* 验证码 */}
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium">验证码</label>
-                  <div className="flex gap-2">
-                    <div className="relative flex-1">
-                      <ShieldCheck className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        type="text"
-                        inputMode="numeric"
-                        maxLength={6}
-                        placeholder="输入6位验证码"
-                        value={code}
-                        onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                        className="pl-9"
-                      />
-                    </div>
-                    <Button
-                      variant="outline"
-                      className="shrink-0"
-                      onClick={sendCode}
-                      disabled={loading || countdown > 0 || phone.replace(/\D/g, "").length !== 11}
-                    >
-                      {countdown > 0 ? `${countdown}s` : codeSent ? "重新发送" : "发送验证码"}
-                    </Button>
-                  </div>
-                </div>
-
                 {/* 密码 */}
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium">设置密码</label>
@@ -243,6 +158,22 @@ function RegisterForm() {
                       placeholder="至少6位密码"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
+                      className="pl-9"
+                      onKeyDown={(e) => { if (e.key === "Enter") handleRegister() }}
+                    />
+                  </div>
+                </div>
+
+                {/* 昵称 */}
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium">昵称（选填）</label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type="text"
+                      placeholder="给自己起个名字吧"
+                      value={nickname}
+                      onChange={(e) => setNickname(e.target.value)}
                       className="pl-9"
                       onKeyDown={(e) => { if (e.key === "Enter") handleRegister() }}
                     />
